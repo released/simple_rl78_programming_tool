@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6F2E270D-5B32-48A5-9B5E-BB32A6D53A47}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Rl78ProgrammerTool</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><UseOfMfc>Static</UseOfMfc><WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup><OutDir>$(SolutionDir)build\</OutDir><IntDir>$(SolutionDir)build\obj\app\$(Configuration)\</IntDir><TargetName>Rl78ProgrammerTool</TargetName></PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><SDLCheck>true</SDLCheck><ConformanceMode>true</ConformanceMode><LanguageStandard>stdcpp17</LanguageStandard><PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)shared\include;$(SolutionDir)pc\sdk\include;$(SolutionDir)pc\sdk\src;$(SolutionDir)pc\app;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDOWS;_WIN32_WINNT=0x0A00;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link><SubSystem>Windows</SubSystem><GenerateDebugInformation>true</GenerateDebugInformation><AdditionalDependencies>setupapi.lib;hid.lib;cfgmgr32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="pc\app\main.cpp" />
+    <ClCompile Include="pc\app\app.cpp" />
+    <ClCompile Include="pc\app\app_config.cpp" />
+    <ClCompile Include="pc\app\main_frame.cpp" />
+    <ClCompile Include="pc\app\session_file_logger.cpp" />
+    <ClCompile Include="pc\sdk\src\bridge_firmware_image.cpp" />
+    <ClCompile Include="pc\sdk\src\bridge_firmware_updater.cpp" />
+    <ClCompile Include="pc\sdk\src\hid_transport.cpp" />
+    <ClCompile Include="pc\sdk\src\nuvo_isp_bootloader_client.cpp" />
+    <ClCompile Include="pc\sdk\src\nuvo_isp_protocol.cpp" />
+    <ClCompile Include="pc\sdk\src\programmer_exception.cpp" />
+    <ClCompile Include="pc\sdk\src\programmer_sdk.cpp" />
+    <ClCompile Include="pc\sdk\src\serial_plp_framer.cpp" />
+    <ClCompile Include="pc\sdk\src\serial_transport.cpp" />
+    <ClCompile Include="shared\src\integrity.c" />
+    <ClCompile Include="shared\src\plp_frame.c" />
+    <ClCompile Include="shared\src\oip_format.c" />
+    <ClCompile Include="shared\src\intel_hex.cpp" />
+    <ClCompile Include="shared\src\srecord.cpp" />
+    <ClCompile Include="shared\src\target_profile.cpp" />
+    <ClCompile Include="shared\src\offline_image.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="pc\app\rl78_programmer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pc\app\app.h" /><ClInclude Include="pc\app\app_config.h" /><ClInclude Include="pc\app\main_frame.h" /><ClInclude Include="pc\app\resource.h" /><ClInclude Include="pc\app\session_file_logger.h" /><ClInclude Include="pc\app\validated_image_source.h" />
+    <ClInclude Include="pc\sdk\include\bridge_firmware_updater.h" /><ClInclude Include="pc\sdk\include\programmer_sdk.h" /><ClInclude Include="pc\sdk\src\hid_transport.h" /><ClInclude Include="pc\sdk\src\nuvo_isp_bootloader_client.h" /><ClInclude Include="pc\sdk\src\nuvo_isp_protocol.h" /><ClInclude Include="pc\sdk\src\programmer_transport.h" /><ClInclude Include="pc\sdk\src\serial_plp_framer.h" /><ClInclude Include="pc\sdk\src\serial_transport.h" />
+    <ClInclude Include="shared\include\rl78_programmer\integrity.h" /><ClInclude Include="shared\include\rl78_programmer\intel_hex.h" /><ClInclude Include="shared\include\rl78_programmer\plp_contract.h" /><ClInclude Include="shared\include\rl78_programmer\plp_frame.h" /><ClInclude Include="shared\include\rl78_programmer\oip_format.h" /><ClInclude Include="shared\include\rl78_programmer\srecord.h" /><ClInclude Include="shared\include\rl78_programmer\target_profile.h" /><ClInclude Include="shared\include\rl78_programmer\offline_image.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

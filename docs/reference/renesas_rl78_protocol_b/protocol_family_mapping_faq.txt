@@ -1,0 +1,20 @@
+https://en-support.renesas.com/knowledgeBase/16979203
+
+
+RL78Family (except RL78/F23, F24, G10, G15, G16, G1M, G1N, G22, G23, G24)
+See the Application Note of RL78 Microcontrollers (RL78 Protocol A) Programmer Edition 
+https://www.renesas.com/search?keywords=R01AN0815eJ
+
+RL78/G10, G15, G16, G1M, G1N
+See the Application note of RL78 Microcontroller (RL78 Protocol B) Serial Programming Guide
+https://www.renesas.com/search?keywords=R01AN6332eJ
+
+RL78/G22, G23, G24
+See the Application Note of RL78 Microcontroller (RL78 Protocol C) Serial Programming Guide
+https://www.renesas.com/search?keywords=R01AN5756eJ
+
+RL78/F23, F24
+
+See the Application Note of RL78 Microcontroller (RL78 Protocol D) Serial Programming Guide
+
+https://www.renesas.com/search?keywords=R01AN6278eJ

@@ -1,0 +1,35 @@
+#include <winres.h>
+#include "resource.h"
+
+IDR_MAINFRAME ICON "res\\programmer.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS__WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "Reusable Programmer Platform\0"
+            VALUE "FileDescription", "RL78 Programmer Tool\0"
+            VALUE "FileVersion", "1.0.0.001\0"
+            VALUE "InternalName", "Rl78ProgrammerTool.exe\0"
+            VALUE "OriginalFilename", "Rl78ProgrammerTool.exe\0"
+            VALUE "ProductName", "RL78 Programmer Tool\0"
+            VALUE "ProductVersion", "1.0.0.001\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END

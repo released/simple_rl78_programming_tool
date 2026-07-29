@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FF9A126C-E433-4A90-971A-A4D40CDBE063}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Rl78ProgrammerTests</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup><OutDir>$(SolutionDir)build\obj\tests\$(Configuration)\bin\</OutDir><IntDir>$(SolutionDir)build\obj\tests\$(Configuration)\intermediate\</IntDir><TargetName>Rl78ProgrammerTests</TargetName></PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><SDLCheck>true</SDLCheck><ConformanceMode>true</ConformanceMode><LanguageStandard>stdcpp17</LanguageStandard><PrecompiledHeader>NotUsing</PrecompiledHeader><AdditionalIncludeDirectories>$(SolutionDir)shared\include;$(SolutionDir)pc\sdk\include;$(SolutionDir)pc\sdk\src;$(SolutionDir)pc\app;$(SolutionDir)firmware\core\include;$(SolutionDir)firmware\m032_bridge;$(SolutionDir)firmware\board;$(SolutionDir)firmware\storage;$(SolutionDir)firmware\target;$(SolutionDir)firmware\nulink2me;$(SolutionDir)firmware\m032_test_board;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>_CONSOLE;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link><SubSystem>Console</SubSystem><GenerateDebugInformation>true</GenerateDebugInformation></Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="tests\native\test_main.cpp" />
+    <ClCompile Include="pc\app\session_file_logger.cpp" />
+    <ClCompile Include="pc\sdk\src\bridge_firmware_image.cpp" />
+    <ClCompile Include="pc\sdk\src\nuvo_isp_protocol.cpp" />
+    <ClCompile Include="pc\sdk\src\programmer_exception.cpp" />
+    <ClCompile Include="pc\sdk\src\serial_plp_framer.cpp" />
+    <ClCompile Include="shared\src\integrity.c" />
+    <ClCompile Include="shared\src\plp_frame.c" />
+    <ClCompile Include="shared\src\oip_format.c" />
+    <ClCompile Include="shared\src\intel_hex.cpp" />
+    <ClCompile Include="shared\src\srecord.cpp" />
+    <ClCompile Include="shared\src\target_profile.cpp" />
+    <ClCompile Include="shared\src\offline_image.cpp" />
+    <ClCompile Include="firmware\core\src\programmer_core.c" />
+    <ClCompile Include="firmware\m032_bridge\m032_programmer.c" />
+    <ClCompile Include="firmware\storage\m032_package_store.c" />
+    <ClCompile Include="firmware\target\rl78_protocol_b.c" />
+    <ClCompile Include="firmware\board\m032_board_profile.c" />
+    <ClCompile Include="firmware\board\m032_board_io.c" />
+    <ClCompile Include="firmware\board\m032_status_led.c" />
+    <ClCompile Include="firmware\nulink2me\nulink2me_board_profile.c" />
+    <ClCompile Include="firmware\nulink2me\nulink2me_image_cache.c" />
+    <ClCompile Include="firmware\nulink2me\nulink2me_offline_recovery.c" />
+    <ClCompile Include="firmware\m032_test_board\m032_test_board_profile.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pc\app\session_file_logger.h" />
+    <ClInclude Include="pc\app\validated_image_source.h" />
+    <ClInclude Include="pc\sdk\include\bridge_firmware_updater.h" />
+    <ClInclude Include="pc\sdk\include\programmer_sdk.h" />
+    <ClInclude Include="pc\sdk\src\nuvo_isp_protocol.h" />
+    <ClInclude Include="pc\sdk\src\serial_plp_framer.h" />
+    <ClInclude Include="shared\include\rl78_programmer\integrity.h" />
+    <ClInclude Include="shared\include\rl78_programmer\intel_hex.h" />
+    <ClInclude Include="shared\include\rl78_programmer\plp_contract.h" />
+    <ClInclude Include="shared\include\rl78_programmer\plp_frame.h" />
+    <ClInclude Include="shared\include\rl78_programmer\oip_format.h" />
+    <ClInclude Include="shared\include\rl78_programmer\srecord.h" />
+    <ClInclude Include="shared\include\rl78_programmer\target_profile.h" />
+    <ClInclude Include="shared\include\rl78_programmer\offline_image.h" />
+    <ClInclude Include="firmware\core\include\programmer_core.h" />
+    <ClInclude Include="firmware\m032_bridge\m032_programmer.h" />
+    <ClInclude Include="firmware\storage\m032_package_store.h" />
+    <ClInclude Include="firmware\target\rl78_protocol_b.h" />
+    <ClInclude Include="firmware\board\m032_board_profile.h" />
+    <ClInclude Include="firmware\board\m032_board_io.h" />
+    <ClInclude Include="firmware\board\m032_status_led.h" />
+    <ClInclude Include="firmware\nulink2me\nulink2me_board_profile.h" />
+    <ClInclude Include="firmware\nulink2me\nulink2me_image_cache.h" />
+    <ClInclude Include="firmware\nulink2me\nulink2me_offline_recovery.h" />
+    <ClInclude Include="firmware\m032_test_board\m032_test_board_profile.h" />
+    <ClInclude Include="firmware\nulink2me\nulink2me_spim_storage.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

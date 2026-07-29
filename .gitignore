@@ -1,0 +1,25 @@
+# Generated outputs only
+build/*
+
+# Root-level local diagnostic captures
+/decoder--*.csv
+/DSLogic*.csv
+/*.dsl
+/Rl78ProgrammerTool_*.log
+
+# Keil generated outputs inside the BSP-style sample tree
+demo_code/**/KEIL/obj/
+demo_code/**/KEIL/lst/
+*.uvguix.*
+*.uvoptx
+
+# Local IDE/editor state
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Temporary documents
+*.tmp
+*.bak
+~$*

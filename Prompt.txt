@@ -1,0 +1,1236 @@
+You are a senior embedded software architect.
+
+Please design a complete software architecture and project specification for a professional RL78/G15 Programmer Tool.
+
+==============================
+Project Goal
+==============================
+
+Develop a complete RL78/G15 programmer.
+
+The programmer consists of:
+
+1.
+Windows MFC GUI
+
+2.
+Nuvoton M032SE3AE EVB Firmware
+
+The GUI communicates with M032 through USB HID.
+
+M032 communicates with RL78/G15 through RL78 Protocol B UART.
+
+This programmer must support BOTH
+
+- Online Programming
+- Offline Programming
+
+This is NOT a bootloader.
+
+Programming uses RL78 factory serial programming mode.
+
+No modification is required for RL78 firmware.
+
+RL78 firmware is still developed using Renesas CS+.
+
+CS+ generates
+
+*.mot
+
+The GUI loads MOT files.
+
+==============================
+Development Rules
+==============================
+
+Do NOT write implementation code.
+
+Do NOT generate source code.
+
+Only generate
+
+Professional Software Architecture Specification.
+
+Every module must include
+
+Purpose
+
+Responsibilities
+
+Interfaces
+
+State Machine
+
+Error Handling
+
+Future Extension
+
+Sequence Diagram
+
+Flow Chart
+
+Class Diagram
+
+Mermaid Diagram
+
+File Organization
+
+Protocol Definition
+
+Data Structure
+
+Configuration
+
+Versioning
+
+Production Consideration
+
+==============================
+System Overview
+==============================
+
+PC GUI
+
+↓
+
+USB HID
+
+↓
+
+M032 Programmer
+
+↓
+
+UART
+
+↓
+
+RL78 Protocol B
+
+↓
+
+RL78/G15
+
+==============================
+Please divide the project into
+
+1.
+PC GUI
+
+2.
+USB HID Protocol
+
+3.
+M032 Firmware
+
+4.
+Offline Image Format
+
+5.
+RL78 Protocol Driver
+
+6.
+Production Tool
+
+==============================
+Part 1
+PC GUI
+==============================
+
+Design every module.
+
+Examples
+
+Main Window
+
+Device Manager
+
+Image Manager
+
+Firmware Downloader
+
+Offline Image Generator
+
+Programming Monitor
+
+Device Information
+
+Project Settings
+
+Error Log
+
+Progress Window
+
+History
+
+Configuration
+
+Language
+
+Version
+
+CRC Calculator
+
+MOT Parser
+
+Image Builder
+
+USB HID Driver Layer
+
+Command Dispatcher
+
+Task Queue
+
+Logger
+
+Please explain
+
+responsibility
+
+input
+
+output
+
+dependency
+
+future extension
+
+==============================
+Part 2
+USB HID Protocol
+==============================
+
+Design complete HID protocol.
+
+Include
+
+Packet Header
+
+Magic
+
+Command
+
+Sequence Number
+
+Payload Length
+
+Payload
+
+CRC16
+
+ACK
+
+NAK
+
+Retry
+
+Timeout
+
+Version
+
+Device Information
+
+Image Download
+
+Program
+
+Verify
+
+Reset
+
+Read Signature
+
+Read Flash
+
+Read Configuration
+
+Offline Programming Command
+
+Firmware Update
+
+Error Response
+
+Maximum Packet Size
+
+State Diagram
+
+Sequence Diagram
+
+Future Expansion
+
+==============================
+Part 3
+M032 Firmware
+==============================
+
+Design complete firmware architecture.
+
+Suggested modules
+
+main
+
+usb hid
+
+command parser
+
+protocol dispatcher
+
+offline image manager
+
+flash storage
+
+crc
+
+button manager
+
+led manager
+
+device manager
+
+programmer manager
+
+rl78 protocol
+
+uart driver
+
+gpio driver
+
+timer
+
+log
+
+settings
+
+error handler
+
+watchdog
+
+task scheduler
+
+state machine
+
+==============================
+Part 4
+Programming Modes
+==============================
+
+Design
+
+Online Programming
+
+GUI
+
+↓
+
+USB HID
+
+↓
+
+M032
+
+↓
+
+RL78
+
+Offline Programming
+
+USB Power Only
+
+↓
+
+Button
+
+↓
+
+Read Internal Image
+
+↓
+
+Program RL78
+
+Include
+
+flow chart
+
+sequence diagram
+
+state machine
+
+==============================
+Part 5
+Offline Image
+==============================
+
+Design
+
+offline image package format
+
+Image Header
+
+Version
+
+Target Device
+
+Project
+
+Firmware Version
+
+Build Time
+
+Image Size
+
+CRC
+
+Option Byte Policy
+
+Code Flash
+
+Data Flash
+
+Metadata
+
+Future multiple images
+
+A/B slots
+
+Recovery
+
+Power Loss Protection
+
+==============================
+Part 6
+RL78 Programming
+==============================
+
+Design
+
+RL78 Protocol B Driver Layer
+
+without implementation.
+
+State Machine
+
+Connect
+
+Read Signature
+
+Erase
+
+Write
+
+Verify
+
+Reset
+
+Disconnect
+
+Retry Policy
+
+Timeout
+
+Recovery
+
+Error Handling
+
+==============================
+Part 7
+Production Mode
+==============================
+
+Design production features.
+
+Statistics
+
+Programming Counter
+
+Programming Time
+
+Device History
+
+CSV Export
+
+Serial Number
+
+Barcode
+
+QR Code
+
+Project Lock
+
+Password
+
+Operator
+
+Factory Mode
+
+==============================
+Part 8
+Directory Structure
+==============================
+
+Design
+
+PC
+
+Firmware
+
+Shared
+
+Protocol
+
+Document
+
+Test
+
+Tools
+
+Build
+
+==============================
+Part 9
+Future Extension
+==============================
+
+The architecture must support future devices.
+
+Not only RL78/G15.
+
+Also
+
+RL78/G16
+
+RL78/G23
+
+RL78/F24
+
+Future Renesas devices
+
+Only Protocol Layer should change.
+
+Everything else should remain reusable.
+
+==============================
+Output Requirement
+==============================
+
+Generate a professional architecture document.
+
+Use Markdown.
+
+Use Mermaid.
+
+No source code.
+
+No pseudo code.
+
+Only architecture.
+
+The document should be suitable as the master specification for future software development.
+
+The specification should be detailed enough that multiple developers can independently implement GUI and Firmware while remaining compatible.
+
+
+==============================
+Required Documents
+==============================
+
+The project must generate the following documents.
+
+--------------------------------
+
+1.
+Software Architecture Specification (SAS)
+
+This is the top-level architecture.
+
+Include
+
+System Overview
+
+Module Responsibility
+
+Architecture
+
+Layer Design
+
+Dependency
+
+State Machine
+
+Sequence Diagram
+
+Mermaid
+
+Directory Structure
+
+Extension Strategy
+
+--------------------------------
+
+2.
+Programmer Protocol Specification (PPS)
+
+This document defines ALL communication
+between PC and M032.
+
+Include
+
+Packet Format
+
+Command ID
+
+Response
+
+ACK
+
+NAK
+
+Retry
+
+Timeout
+
+CRC
+
+Sequence Number
+
+Version Negotiation
+
+Device Discovery
+
+Online Programming
+
+Offline Image Download
+
+Offline Programming
+
+Firmware Upgrade
+
+Device Information
+
+Read Status
+
+Read Log
+
+Error Code
+
+Future Reserved Commands
+
+Binary Protocol Examples
+
+State Machine
+
+Sequence Diagram
+
+--------------------------------
+
+3.
+Firmware Software Design Specification (FSDS)
+
+Describe the internal firmware architecture.
+
+Include
+
+Task
+
+Scheduler
+
+Module
+
+Driver
+
+Programmer Engine
+
+USB HID Layer
+
+Image Manager
+
+Flash Storage
+
+RL78 Driver
+
+State Machine
+
+Memory Map
+
+Configuration
+
+Watchdog
+
+Error Recovery
+
+--------------------------------
+
+4.
+GUI Software Design Specification (GSDS)
+
+Describe the complete MFC application.
+
+Include
+
+Main Window
+
+Project
+
+Settings
+
+Programming Window
+
+Offline Window
+
+Progress Window
+
+Logger
+
+USB Manager
+
+Task Queue
+
+Image Parser
+
+Configuration
+
+Version
+
+History
+
+Future Plug-in Support
+
+--------------------------------
+
+5.
+Offline Image Specification (OIS)
+
+Describe the offline image format.
+
+Include
+
+Header
+
+Version
+
+Target Device
+
+Project
+
+Firmware Version
+
+Build Date
+
+Metadata
+
+Code Flash
+
+Data Flash
+
+CRC32
+
+Image Signature
+
+Option Policy
+
+Recovery
+
+Multiple Images
+
+Future Expansion
+
+
+6.
+Programmer SDK Specification (PSDK)
+
+The PC GUI shall NOT communicate
+directly with USB HID.
+
+Instead
+
+GUI
+
+↓
+
+Programmer SDK
+
+↓
+
+USB HID
+
+↓
+
+M032
+
+Design a reusable SDK.
+
+Include
+
+API
+
+Error Code
+
+Version
+
+Callback
+
+Progress
+
+Cancellation
+
+Logging
+
+Configuration
+
+Future language binding
+
+C
+
+C++
+
+Python
+
+C#
+
+LabVIEW
+
+
+==============================
+Architecture Requirements
+==============================
+
+The architecture shall follow
+
+SOLID
+
+Layered Architecture
+
+Dependency Injection
+
+Hardware Abstraction Layer
+
+Platform Independent Design
+
+No module shall directly access
+another module's private implementation.
+
+All communication shall be
+interface-based.
+
+Future devices must be added
+without modifying existing GUI code.
+
+Future communication methods
+
+USB HID
+
+CDC
+
+UART
+
+Ethernet
+
+BLE
+
+shall be replaceable by
+changing only the Communication Layer.
+
+The Programming Engine
+must remain completely independent
+from the Communication Layer.
+
+==============================
+Device Driver Framework
+==============================
+
+Design a generic device driver framework.
+
+The Programming Engine shall never directly
+know any specific MCU.
+
+All MCU-specific behavior shall be implemented
+inside Device Drivers.
+
+Each Device Driver shall provide:
+
+Connect
+
+Read Signature
+
+Read Device Information
+
+Read Flash
+
+Erase
+
+Program
+
+Verify
+
+Reset
+
+Disconnect
+
+Capability
+
+Timeout
+
+Retry Policy
+
+Future devices shall be added only by
+adding a new driver.
+
+The Programming Engine shall require
+zero modification.
+
+==============================
+Hardware Abstraction Layer
+==============================
+
+Firmware shall use HAL.
+
+No upper layer shall access
+GPIO
+UART
+USB
+Timer
+Flash
+
+directly.
+
+All hardware access
+must go through HAL.
+
+Future MCU replacement
+shall only modify HAL.
+
+
+==============================
+Image Builder
+==============================
+
+Design a generic image builder.
+
+Supported Input
+
+Motorola S-record
+
+Intel HEX
+
+Binary
+
+Future ELF
+
+Output
+
+Unified Program Image
+
+The Programming Engine shall only
+understand Program Image.
+
+It shall never parse
+MOT
+HEX
+BIN
+
+
+==============================
+Image Validator
+==============================
+
+Before programming,
+
+the GUI shall validate
+
+Address
+
+CRC
+
+Overlap
+
+Duplicate Record
+
+Unsupported Address
+
+Option Byte
+
+Security Area
+
+Image Version
+
+Device Compatibility
+
+Programming shall never begin
+if validation fails.
+
+
+==============================
+Programming Engine
+==============================
+
+Programming Engine shall be completely
+communication independent.
+
+It shall receive Program Image
+through abstract interfaces.
+
+It shall never know
+
+USB
+
+UART
+
+HID
+
+CDC
+
+Ethernet
+
+BLE
+
+Only abstract Image Provider
+shall be visible.
+
+
+==============================
+Image Provider
+==============================
+
+Programming Engine shall obtain firmware
+through Image Provider.
+
+Supported Providers
+
+Online Stream
+
+Internal Flash
+
+Future SD Card
+
+Future USB Disk
+
+Future Network
+
+Programming Engine
+shall never know
+where image comes from.
+
+
+==============================
+Storage Manager
+==============================
+
+Design storage manager.
+
+Support
+
+Programmer Configuration
+
+Offline Image
+
+History
+
+Statistics
+
+Calibration
+
+Version
+
+Recovery
+
+Future Multiple Images
+
+Future Encryption
+
+==============================
+Configuration Manager
+==============================
+
+Separate configuration from source code.
+
+Examples
+
+USB Timeout
+
+Programming Retry
+
+Programming Speed
+
+LED Brightness
+
+Language
+
+Offline Auto Run
+
+Factory Mode
+
+Future Settings
+
+==============================
+Event Logger
+==============================
+
+Design unified logger.
+
+Support
+
+INFO
+
+WARNING
+
+ERROR
+
+DEBUG
+
+TRACE
+
+GUI
+
+Firmware
+
+Programming
+
+USB
+
+Driver
+
+Offline
+
+All logs shall use
+common format.
+
+
+==============================
+Unified Error Code
+==============================
+
+Design unified error code.
+
+Every module shall return
+standardized error code.
+
+Include
+
+USB
+
+Image
+
+CRC
+
+Flash
+
+Programming
+
+Timeout
+
+Device
+
+Driver
+
+Storage
+
+Offline
+
+Unknown
+
+==============================
+Production Ready
+==============================
+
+Design production mode.
+
+Support
+
+Batch Programming
+
+Automatic Programming
+
+Statistics
+
+CSV Export
+
+Programming Time
+
+Programming Count
+
+Yield
+
+Pass
+
+Fail
+
+Operator
+
+Barcode
+
+Future MES Integration
+
+==============================
+Plugin Framework
+==============================
+
+Design plugin architecture.
+
+GUI shall support
+
+Future Device Plugins
+
+Future Protocol Plugins
+
+Future Image Parser Plugins
+
+Future Report Plugins
+
+Core GUI shall never
+require modification.
+
+
+Every chapter shall include
+
+Overview
+
+Purpose
+
+Responsibilities
+
+Interfaces
+
+Mermaid
+
+Sequence Diagram
+
+State Machine
+
+Class Diagram
+
+Extension Strategy
+
+Risk Analysis
+
+Unit Test Suggestion
+
+Future Improvement
+
+
+==============================
+Project Philosophy
+==============================
+
+This project is NOT an RL78/G15 programmer.
+
+It is a reusable Programmer Platform.
+
+RL78/G15 is only the first supported device.
+
+Every architecture decision shall maximize
+future reusability.
+
+No design shall be tightly coupled
+to RL78/G15.
+
+The Programming Engine shall be reusable.
+
+The GUI shall be reusable.
+
+The Firmware shall be reusable.
+
+Only Device Drivers shall be device dependent.
+
+
+
+
