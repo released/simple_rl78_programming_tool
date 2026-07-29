@@ -1,10 +1,6 @@
 # Generated outputs only
-build/*
 
 # Root-level local diagnostic captures
-/decoder--*.csv
-/DSLogic*.csv
-/*.dsl
 /Rl78ProgrammerTool_*.log
 
 # Keil generated outputs inside the BSP-style sample tree
