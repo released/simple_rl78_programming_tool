@@ -6,8 +6,13 @@
   repository ID, public visibility, main branch and history preserved.
 - [x] origin updated to the renamed URL; project/EXE/INI identifiers unchanged.
 - [x] Pre-existing build/logs preserved; no logs selected for upload.
-- [ ] Local folder rename: Windows access denied; waiting for project/terminal
-  handles to be released. Post-move build/tests NOT RUN yet.
+- [x] Local folder rename completed after workspace/terminals closed; .git and
+  user data preserved. Local INI old-folder paths migrated, other options kept.
+- [x] Post-move Debug/Release x64 builds PASS0warnings/0errors; both native
+  conformance suites PASS. Original delivery EXE bytes preserved; verifier/logs
+  stored outside Git, no compiled artifacts/INI/logs selected for upload.
+- [ ] Startup/UI smoke NOT RUN: desktop helper native pipe unavailable after
+  retry/reset. No hardware operation or firmware flashing performed.
 - [x] Naming docs committed/pushed as2104a11; local/remote main equality verified.
 - [x] Modified Markdown links/fences and whitespace PASS; clean audit PASS24.
 

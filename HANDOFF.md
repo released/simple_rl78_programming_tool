@@ -5,13 +5,21 @@
 - Directory/repository naming (2026-10-14): canonical name is
   `simple_rl78_programming_tool`. Original GitHub repository was renamed in
   place (ID1315625250, public/main unchanged) and origin now uses the new URL.
-  Local directory rename is pending: both normal and native directory moves
-  were denied by Windows. Do not claim the local path has moved yet.
+  Local directory was renamed successfully after the user closed its VS Code
+  workspace/terminals. The .git directory and full working tree moved together.
   Existing untracked build/logs are preserved and excluded from this commit.
   Project/EXE/INI names and protocol behavior remain unchanged. Naming docs
   were committed/pushed as2104a11; local/remote main equality verified.
   Markdown links/fences and whitespace checks PASS; workspace clean audit
-  PASS24 scripts. Post-move build/tests remain NOT RUN until the move succeeds.
+  PASS24 scripts. Path-only migration of LastMotPath/LastBridgeFirmwarePath in
+  local INI preserves all other options and is not selected for upload.
+  Post-move Debug/Release x64 builds PASS0warnings/0errors; both native
+  conformance suites PASS. No firmware or target programming was performed.
+  Original delivery EXE bytes preserved after verification; rebuilt Release,
+  logs and original EXE/INI backups are outside Git in the temporary evidence
+  directory codex-folder-rename-57412d53ee78419d8fe063cf616db64d.
+  Startup/UI smoke NOT RUN: Computer Use native pipe unavailable after retry
+  and reset. No direct PowerShell UI automation was used.
 
 - GitHub-readiness pass (2026-07-29): the root README is now a bilingual
   first-time user guide centered on Nu-Link2-Me and M032 TEST BOARD. It contains
