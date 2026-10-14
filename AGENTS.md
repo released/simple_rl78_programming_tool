@@ -2,6 +2,10 @@
 
 ## Project Purpose
 
+Canonical repository/checkout directory: `simple_rl78_programming_tool`.
+Preserve `Rl78ProgrammerTool` solution/project/EXE and `rl78_programmer.ini`;
+this naming change must not alter target profiles or wire identifiers.
+
 This workspace specifies a reusable production programmer platform. RL78/G15 over RL78 Protocol B and an M032SE3AE USB HID bridge are the first product configuration, not permanent core dependencies.
 
 ## Current Phase

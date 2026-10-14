@@ -1,5 +1,10 @@
 # RL78 Programmer Tool
 
+Repository and checkout directory: `simple_rl78_programming_tool`.
+[GitHub repository](https://github.com/released/simple_rl78_programming_tool).
+The folder/repository rename does not change `Rl78ProgrammerTool.exe`, the
+Visual Studio project names, `rl78_programmer.ini`, or bridge protocol IDs.
+
 Windows GUI and bridge firmware for programming RL78/G15 and RL78/G16 devices
 through Renesas Protocol B. Two primary programmer boards are supported:
 

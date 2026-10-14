@@ -2,6 +2,15 @@
 
 ## Current status
 
+- Directory/repository naming (2026-10-14): canonical name is
+  `simple_rl78_programming_tool`. Original GitHub repository was renamed in
+  place (ID1315625250, public/main unchanged) and origin now uses the new URL.
+  Local directory rename is pending: both normal and native directory moves
+  were denied by Windows. Do not claim the local path has moved yet.
+  Existing untracked build/logs are preserved and excluded from this commit.
+  Project/EXE/INI names and protocol behavior remain unchanged. Post-move
+  build/tests and rename-document commit/push still require verification.
+
 - GitHub-readiness pass (2026-07-29): the root README is now a bilingual
   first-time user guide centered on Nu-Link2-Me and M032 TEST BOARD. It contains
   exact two-branch 47-ohm TOOL0 wiring, target VDD/RESET/GND connections,

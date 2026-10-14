@@ -1,5 +1,15 @@
 # Self check
 
+## Folder/repository rename gate (2026-10-14)
+
+- [x] GitHub repository renamed in place to simple_rl78_programming_tool;
+  repository ID, public visibility, main branch and history preserved.
+- [x] origin updated to the renamed URL; project/EXE/INI identifiers unchanged.
+- [x] Pre-existing build/logs preserved; no logs selected for upload.
+- [ ] Local folder rename: Windows access denied; waiting for project/terminal
+  handles to be released. Post-move build/tests NOT RUN yet.
+- [ ] Naming-document commit/push and remote commit verification.
+
 ## Implemented boundaries
 
 - [x] The GUI main window opens maximized initially without disabling the
