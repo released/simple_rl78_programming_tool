@@ -8,7 +8,8 @@
 - [x] Pre-existing build/logs preserved; no logs selected for upload.
 - [ ] Local folder rename: Windows access denied; waiting for project/terminal
   handles to be released. Post-move build/tests NOT RUN yet.
-- [ ] Naming-document commit/push and remote commit verification.
+- [x] Naming docs committed/pushed as2104a11; local/remote main equality verified.
+- [x] Modified Markdown links/fences and whitespace PASS; clean audit PASS24.
 
 ## Implemented boundaries
 

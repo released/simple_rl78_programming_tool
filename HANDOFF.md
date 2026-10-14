@@ -8,8 +8,10 @@
   Local directory rename is pending: both normal and native directory moves
   were denied by Windows. Do not claim the local path has moved yet.
   Existing untracked build/logs are preserved and excluded from this commit.
-  Project/EXE/INI names and protocol behavior remain unchanged. Post-move
-  build/tests and rename-document commit/push still require verification.
+  Project/EXE/INI names and protocol behavior remain unchanged. Naming docs
+  were committed/pushed as2104a11; local/remote main equality verified.
+  Markdown links/fences and whitespace checks PASS; workspace clean audit
+  PASS24 scripts. Post-move build/tests remain NOT RUN until the move succeeds.
 
 - GitHub-readiness pass (2026-07-29): the root README is now a bilingual
   first-time user guide centered on Nu-Link2-Me and M032 TEST BOARD. It contains
