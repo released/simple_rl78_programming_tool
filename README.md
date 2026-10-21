@@ -1,5 +1,14 @@
 # RL78 Programmer Tool
 
+## Publication and local data
+
+The current source/layout and native delivery are published without personal INIs,
+logs or debugger/user options. Defaults are generated locally where supported;
+existing local settings/data are not deleted by clean or publication. Current-tree
+index removals do not erase earlier Git history. See SELF_CHECK.md for actual
+build/test results and hardware limitations.
+
+
 Repository and checkout directory: `simple_rl78_programming_tool`.
 [GitHub repository](https://github.com/released/simple_rl78_programming_tool).
 The folder/repository rename does not change `Rl78ProgrammerTool.exe`, the
@@ -206,7 +215,7 @@ package. Scan and reconnect after USB or COM re-enumeration.
 
 ### 5. Program tab: Online programming
 
-![Program tab](tab_Online_program.png)
+![Program tab](docs/images/tab_Online_program.png)
 
 1. Select the exact target profile, including the RL78 family and flash size.
 2. Click `Browse` and choose an S-record, Intel HEX, or raw BIN image.
@@ -225,7 +234,7 @@ programming state machine can stop safely.
 
 ### 6. Offline tab: Store and trigger an image
 
-![Offline tab](tab_Offline_program.png)
+![Offline tab](docs/images/tab_Offline_program.png)
 
 The OIP package is generated automatically from the validated target image.
 The user does not need to create an OIP file first.
@@ -253,7 +262,7 @@ GUI is connected.
 
 ### 7. FW Upload tab: Update bridge application
 
-![FW Upload tab](tab_FW_Upload.png)
+![FW Upload tab](docs/images/tab_FW_Upload.png)
 
 This tab updates the programmer bridge application. It does not upload an
 RL78 target image.
@@ -327,20 +336,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_m032_test_board_keil.ps
 .\scripts\clean_mfc.bat
 ```
 
-`scripts/clean_mfc.bat` removes:
+`scripts/clean_mfc.bat` delegates to `clean_intermediates.ps1` and removes only
+allowlisted compiler/linker files. It never recursively purges obj/tests/logs.
+EXE, INI, required DLLs, logs, data, firmware and unknown files remain, including
+inside obj. Reparse points are rejected before any deletion. PC intermediates,
+local logs and Keil generated directories are excluded by `.gitignore`.
 
-- `build/obj/`
-- `build/logs/`
-
-It preserves:
-
-- `build/Rl78ProgrammerTool.exe`
-- `build/rl78_programmer.ini`
-
-It does not delete any other file in the root `build` directory and does not
-remove Keil project `obj/lst` directories. With the expected build layout,
-only the EXE and INI remain after cleaning. Keil generated directories are
-excluded by `.gitignore`.
+This project uses the documented layered profile: `pc/app`, `pc/sdk`, `shared`,
+`firmware`, `scripts`, `docs`, and `build`. Do not rename `pc` to `src` just for
+appearance: SDK, firmware and normative contracts share these paths. Screenshots
+are under `docs/images`.
 
 ### 11. GitHub publication and privacy
 
@@ -565,7 +570,7 @@ Application session 已連線時可按 `RESET MCU`。此動作會 reset bridge M
 
 ### 5. Program tab：Online programming
 
-![Program tab](tab_Online_program.png)
+![Program tab](docs/images/tab_Online_program.png)
 
 1. 選擇正確的 target profile，包括 RL78 family 與 flash size。
 2. 按 `Browse`，選擇 S-record、Intel HEX 或 raw BIN。
@@ -582,7 +587,7 @@ Progress indicator 會顯示百分比、loaded size、programmed size 與剩餘 
 
 ### 6. Offline tab：儲存與觸發 image
 
-![Offline tab](tab_Offline_program.png)
+![Offline tab](docs/images/tab_Offline_program.png)
 
 OIP 會由 validated target image 自動產生，user 不需要事先製作 OIP。
 
@@ -607,7 +612,7 @@ profile，舊 step 會失效，必須重新 Download、Activate、Arm。
 
 ### 7. FW Upload tab：更新 bridge application
 
-![FW Upload tab](tab_FW_Upload.png)
+![FW Upload tab](docs/images/tab_FW_Upload.png)
 
 此 tab 更新的是 programmer bridge application，不是 RL78 target image。
 
@@ -675,19 +680,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_m032_test_board_keil.ps
 .\scripts\clean_mfc.bat
 ```
 
-`scripts/clean_mfc.bat` 會移除：
+`scripts/clean_mfc.bat` 委派給 `clean_intermediates.ps1`，只移除明確允許的
+編譯／連結中間檔，不會整個刪除 obj、tests 或 logs。EXE、INI、必要 DLL、
+log、資料、韌體與未知檔案一律保留，即使放在 obj 裡也是如此；刪除前先拒絕
+reparse point。PC 中間檔、本機 log 與 Keil 生成目錄由 `.gitignore` 排除。
 
-- `build/obj/`
-- `build/logs/`
-
-會保留：
-
-- `build/Rl78ProgrammerTool.exe`
-- `build/rl78_programmer.ini`
-
-此 script 不會刪除 `build` 根目錄的其他檔案，也不會刪除 Keil project
-的 `obj/lst`。依照預期的 build layout，clean 後只會留下 EXE 與 INI；
-Keil 生成目錄已由 `.gitignore` 排除。
+本專案採分層架構：`pc/app`、`pc/sdk`、`shared`、`firmware`、`scripts`、`docs`
+與 `build`。為保留 SDK、韌體及規格文件的共用路徑，不單純為外觀把 `pc` 改名
+為 `src`；畫面截圖統一放在 `docs/images`。
 
 ### 11. GitHub 上傳與隱私檢查
 

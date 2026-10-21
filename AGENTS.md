@@ -1,5 +1,10 @@
 # AGENTS.md
 
+## Workspace Layout And Safe Clean
+
+Approved layout profile: pc/app, pc/sdk, shared, firmware, scripts, docs, build. Keep these SDK/contract paths; screenshots belong in docs/images. Clean removes only allowlisted compiler files, never build/logs or whole obj/test trees. Ignore local compiler/log/temp outputs; never stage private INIs.
+
+
 ## Project Purpose
 
 Canonical repository/checkout directory: `simple_rl78_programming_tool`.

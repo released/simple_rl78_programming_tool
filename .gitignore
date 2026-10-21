@@ -1,5 +1,22 @@
 # Generated outputs only
 
+# PC compiler output and local runtime evidence; retain tracked delivery EXE.
+/build/obj/
+/build/logs/
+/build/*.log
+/build/*.ini
+/tmp/
+/docs/diagnostics/firmware_build/*.log
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.idb
+*.iobj
+*.ipdb
+*.tlog
+*.lastbuildstate
+
 # Root-level local diagnostic captures
 /Rl78ProgrammerTool_*.log
 
@@ -8,6 +25,7 @@ demo_code/**/KEIL/obj/
 demo_code/**/KEIL/lst/
 *.uvguix.*
 *.uvoptx
+demo_code/**/[Kk][Ee][Ii][Ll]/Nu_Link_Driver.ini
 
 # Local IDE/editor state
 .vs/

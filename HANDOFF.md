@@ -1,5 +1,24 @@
 # Handoff
 
+## Authorized publication preflight (2026-10-21)
+
+- The user now authorizes publishing this repository, superseding the earlier deferred-push note. Scope includes the preserved feature work, layout/clean changes, documentation and reviewed native delivery; no unrelated repository is included.
+- Build/tests: Debug and Release x64 PC builds PASS, 0 warnings/errors. Native conformance suite PASS. Existing delivery version 1.0.0.001 retained. No GUI/target programming or device-write test.
+- Clean PASS: actual scripts/clean_mfc.bat; 5 protected output files unchanged by SHA-256. Expanded fixtures retained 17 delivery/runtime/cache sentinels plus source; object removal, help, repeat clean and reparse rejection PASS.
+- Privacy/index: 6 tracked runtime/Nu-Link INI and historical build-log paths removed from index only; all local bytes/hash preserved. Layered pc/app, pc/sdk, shared and firmware architecture retained; only source/docs/automation/public image moves and already tracked native EXE are eligible.
+- Firmware/limits: No RL78 firmware source changed in this publication; firmware rebuild/physical programming NOT RUN. Native fake-transport conformance is not hardware acceptance.
+- Candidate text/EXE checks found no tested private-key, access-token or personal-profile-path patterns; this is not a full secret/license audit. Only ordinary non-force publication to the verified existing main is authorized; exact final commit/remote SHA is recorded in the workspace migration ledger.
+
+
+## Workspace layout / clean audit (2026-10-21)
+
+- Scope: Moved three screenshots to docs/images and updated both language sections. Retain the meaningful pc/app, pc/sdk, shared, firmware and normative docs profile; do not create an empty src or rename SDK contracts for appearance. Ignore PC obj/log/temp outputs without removing local runtime evidence.
+- Build/tests: PASS: PC `scripts/build_mfc.ps1 -Configuration Release -CloseRunningTool $false`, 0 warnings/errors. `scripts/build_native_tests.ps1 -Configuration Release` PASS, 0 warnings/errors and all native conformance tests passed using fake transports/temporary fixtures.
+- PASS: shared `verify_clean_preservation.ps1 -ProjectRoot <this-project> -CleanBatch scripts\clean_mfc.bat -CleanActualProject -CheckNestedDelivery -CheckReparseRejection`. Non-destructive help, 17 delivery/runtime sentinels plus source, known object removal, repeat clean, and junction rejection passed; 5 actual protected output files unchanged by SHA-256.
+- Additional evidence: Fixed legacy clean which recursively deleted build/logs. Logs and EXE/INI inside obj now survive. The pre-existing private runtime INI SHA-256 is unchanged; no values inspected.
+- Limits/publication: NOT RUN: GUI startup, physical programming, Keil firmware rebuild or hardware acceptance; no real board/flash operation. Existing modifications remain uncommitted; User confirmed this batch's push is deferred; preserve all uncommitted feature work and local results.
+
+
 ## Current status
 
 - Directory/repository naming (2026-10-14): canonical name is
