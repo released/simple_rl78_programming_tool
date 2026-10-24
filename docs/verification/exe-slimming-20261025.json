@@ -1,0 +1,179 @@
+{
+  "Date": "2026-10-25",
+  "Target": "Release|x64",
+  "Toolchain": "MSVC 14.44.35207",
+  "OriginalExeBytes": 3068416,
+  "BaselineBytes": 3068416,
+  "FormalBytes": 978432,
+  "BaselineSHA256": "1F588ED6800B0D520F411F7E1D2D1C7A6E4D3A0D8D5381E8FE6E3876D4ADB3FB",
+  "FormalSHA256": "2652DA394952395FC39169C94113F1ADA03F552010025B10B8589FD0D977E1F5",
+  "Samples": 5,
+  "Order": "baseline calibration before candidate; alternating AB/BA measured pairs",
+  "Limits": {
+    "StartupMs": {
+      "Median": 207.58520000000001,
+      "MAD": 2.3652999999999906,
+      "AllowedDelta": 25
+    },
+    "PeakBytes": {
+      "Median": 18030592,
+      "MAD": 4096,
+      "AllowedDelta": 1048576
+    },
+    "CpuMs": {
+      "Median": 125,
+      "MAD": 15.625,
+      "AllowedDelta": 47
+    },
+    "WorkflowMs": {
+      "Median": 0.6466000000000001,
+      "MAD": 0.04049999999999998,
+      "AllowedDelta": 2
+    }
+  },
+  "Checks": [
+    {
+      "Metric": "StartupMs",
+      "BaselineMedian": 245.2476,
+      "CandidateMedian": 233.13760000000002,
+      "Limit": 270.24760000000003,
+      "Pass": true
+    },
+    {
+      "Metric": "PeakBytes",
+      "BaselineMedian": 18038784,
+      "CandidateMedian": 17600512,
+      "Limit": 19087360,
+      "Pass": true
+    },
+    {
+      "Metric": "CpuMs",
+      "BaselineMedian": 140.625,
+      "CandidateMedian": 171.875,
+      "Limit": 187.625,
+      "Pass": true
+    },
+    {
+      "Metric": "WorkflowMs",
+      "BaselineMedian": 0.7016,
+      "CandidateMedian": 0.8403,
+      "Limit": 2.7016,
+      "Pass": true
+    }
+  ],
+  "Calibration": [
+    {
+      "StartupMs": 628.9923,
+      "WorkflowMs": 0.613,
+      "CpuMs": 109.375,
+      "PeakBytes": 18030592
+    },
+    {
+      "StartupMs": 207.58520000000001,
+      "WorkflowMs": 0.6061000000000001,
+      "CpuMs": 125,
+      "PeakBytes": 18055168
+    },
+    {
+      "StartupMs": 645.6057000000001,
+      "WorkflowMs": 0.7301000000000001,
+      "CpuMs": 109.375,
+      "PeakBytes": 18022400
+    },
+    {
+      "StartupMs": 206.33100000000002,
+      "WorkflowMs": 0.6986,
+      "CpuMs": 140.625,
+      "PeakBytes": 18034688
+    },
+    {
+      "StartupMs": 205.21990000000002,
+      "WorkflowMs": 0.6466000000000001,
+      "CpuMs": 140.625,
+      "PeakBytes": 18026496
+    }
+  ],
+  "Baseline": [
+    {
+      "StartupMs": 628.0767000000001,
+      "WorkflowMs": 0.6942,
+      "CpuMs": 140.625,
+      "PeakBytes": 18038784
+    },
+    {
+      "StartupMs": 225.87830000000002,
+      "WorkflowMs": 0.7016,
+      "CpuMs": 156.25,
+      "PeakBytes": 18051072
+    },
+    {
+      "StartupMs": 245.2476,
+      "WorkflowMs": 1.19,
+      "CpuMs": 140.625,
+      "PeakBytes": 18014208
+    },
+    {
+      "StartupMs": 228.7691,
+      "WorkflowMs": 0.9284,
+      "CpuMs": 156.25,
+      "PeakBytes": 18042880
+    },
+    {
+      "StartupMs": 679.2758,
+      "WorkflowMs": 0.679,
+      "CpuMs": 125,
+      "PeakBytes": 18006016
+    }
+  ],
+  "Candidate": [
+    {
+      "StartupMs": 230.9111,
+      "WorkflowMs": 0.8403,
+      "CpuMs": 171.875,
+      "PeakBytes": 17600512
+    },
+    {
+      "StartupMs": 233.13760000000002,
+      "WorkflowMs": 1.0439,
+      "CpuMs": 171.875,
+      "PeakBytes": 17584128
+    },
+    {
+      "StartupMs": 237.47580000000002,
+      "WorkflowMs": 0.7003,
+      "CpuMs": 187.5,
+      "PeakBytes": 17600512
+    },
+    {
+      "StartupMs": 625.245,
+      "WorkflowMs": 0.7899,
+      "CpuMs": 125,
+      "PeakBytes": 17584128
+    },
+    {
+      "StartupMs": 197.7057,
+      "WorkflowMs": 1.2402,
+      "CpuMs": 125,
+      "PeakBytes": 17604608
+    }
+  ],
+  "InitialTimingGate": null,
+  "TimingDisposition": "First valid completed five-pair measurement passed.",
+  "ActualClean": {
+    "CompilerFilesRemoved": 39,
+    "ProtectedActualFilesUnchanged": 5,
+    "NestedFixtureFiles": 17,
+    "RootIniHashesUnchanged": true
+  },
+  "DebugStartupControlsClose": "PASS; no real INI copied; no Connect/report write/firmware/clipboard commands",
+  "ModalDialog": "PASS: owned native load/browse dialog opened/canceled",
+  "Security": "x64 static CRT/MFC and existing compiler optimization retained; PE 0x8160, VisualManager RTTI absent, no new dependency",
+  "NotRun": [
+    "Physical-device/protocol throughput",
+    "Visual/DPI inspection",
+    "Clean-PC",
+    "Win32",
+    "Unrelated firmware"
+  ],
+  "AppSourceChange": "None"
+}

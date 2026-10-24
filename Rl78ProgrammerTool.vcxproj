@@ -59,5 +59,9 @@
     <ClInclude Include="pc\sdk\include\bridge_firmware_updater.h" /><ClInclude Include="pc\sdk\include\programmer_sdk.h" /><ClInclude Include="pc\sdk\src\hid_transport.h" /><ClInclude Include="pc\sdk\src\nuvo_isp_bootloader_client.h" /><ClInclude Include="pc\sdk\src\nuvo_isp_protocol.h" /><ClInclude Include="pc\sdk\src\programmer_transport.h" /><ClInclude Include="pc\sdk\src\serial_plp_framer.h" /><ClInclude Include="pc\sdk\src\serial_transport.h" />
     <ClInclude Include="shared\include\rl78_programmer\integrity.h" /><ClInclude Include="shared\include\rl78_programmer\intel_hex.h" /><ClInclude Include="shared\include\rl78_programmer\plp_contract.h" /><ClInclude Include="shared\include\rl78_programmer\plp_frame.h" /><ClInclude Include="shared\include\rl78_programmer\oip_format.h" /><ClInclude Include="shared\include\rl78_programmer\srecord.h" /><ClInclude Include="shared\include\rl78_programmer\target_profile.h" /><ClInclude Include="shared\include\rl78_programmer\offline_image.h" />
   </ItemGroup>
+  <!-- Standard/common/custom controls only; x64 size reduction. -->
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <ClCompile><PreprocessorDefinitions>_AFX_NO_MFC_CONTROLS_IN_DIALOGS;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

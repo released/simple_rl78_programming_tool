@@ -1,5 +1,32 @@
 # Self check
 
+## Verified x64 EXE slimming 2026-10-25
+
+- PASS comparable Release baseline 3068416 bytes (original 3068416),
+  formal 978432; SHA 2652DA394952395FC39169C94113F1ADA03F552010025B10B8589FD0D977E1F5.
+- PASS scripts/build_mfc.ps1 -Configuration Release -CloseRunningTool $false; isolated Debug with version prebuild disabled.
+  No compiler/linker warnings/errors reported.
+- PASS hash-matched fresh own-process fixtures: identical child-control class counts,
+  native file dialog open/cancel, Debug without assertion and normal exit 0. No real INIs,
+  Connect, report writes, flash or clipboard actions. Passive Windows device discovery
+  may occur as in normal disconnected startup; it is not a hardware I/O validation.
+- PASS existing static runtime, compiler optimization/security, x64 PE 0x8160;
+  unused VisualManager RTTI absent. No app/SDK/protocol/firmware source changes.
+- PASS scoped timing: two warmups, baseline calibration before Release candidate,
+  5 alternating AB/BA pairs without concurrent compilation. Delta max(floor,
+  10% baseline median, 3*MAD); memory 5%; floors startup25/UI2/CPU16ms, memory1MiB.
+  - StartupMs: 245.2476 -> 233.1376; limit 270.2476.
+  - PeakBytes: 18038784.0000 -> 17600512.0000; limit 19087360.0000.
+  - CpuMs: 140.6250 -> 171.8750; limit 187.6250.
+  - WorkflowMs: 0.7016 -> 0.8403; limit 2.7016.
+- Raw numeric samples/limits/original failed timing: docs/verification/exe-slimming-20261025.json.
+- PASS actual clean_mfc.bat: 39 compiler files removed, 5 protected actual files
+  SHA unchanged; 17 nested fixture files/source, help/idempotence PASS. Earlier
+  unchanged junction/firmware/core evidence reused; private root INI hashes preserved.
+- NOT RUN: physical-device/protocol throughput, unrelated firmware, visual/DPI,
+  clean-PC, Win32. This scoped MFC change does not require a full hardware suite.
+
+
 ## Authorized publication preflight (2026-10-21)
 
 - The user now authorizes publishing this repository, superseding the earlier deferred-push note. Scope includes the preserved feature work, layout/clean changes, documentation and reviewed native delivery; no unrelated repository is included.

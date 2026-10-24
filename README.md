@@ -1,5 +1,15 @@
 # RL78 Programmer Tool
 
+## Release EXE size reduction (2026-10-25)
+
+Release x64 EXE: 3,068,416 -> 978,432 bytes.
+Unused MFC control registration is excluded; static runtime, security, actual
+controls and protocol/firmware features remain.
+Isolated startup, controls, Debug normal-close and 5 paired performance samples
+passed. See SELF_CHECK.md for scope, original timing failures and actual clean
+preservation. Physical-device, visual/DPI and clean-PC acceptance are not claimed.
+
+
 ## Publication and local data
 
 The current source/layout and native delivery are published without personal INIs,
