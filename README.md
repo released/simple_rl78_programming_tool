@@ -1,29 +1,5 @@
 # RL78 Programmer Tool
 
-## Release EXE size reduction (2026-10-25)
-
-Release x64 EXE: 3,068,416 -> 978,432 bytes.
-Unused MFC control registration is excluded; static runtime, security, actual
-controls and protocol/firmware features remain.
-Isolated startup, controls, Debug normal-close and 5 paired performance samples
-passed. See SELF_CHECK.md for scope, original timing failures and actual clean
-preservation. Physical-device, visual/DPI and clean-PC acceptance are not claimed.
-
-
-## Publication and local data
-
-The current source/layout and native delivery are published without personal INIs,
-logs or debugger/user options. Defaults are generated locally where supported;
-existing local settings/data are not deleted by clean or publication. Current-tree
-index removals do not erase earlier Git history. See SELF_CHECK.md for actual
-build/test results and hardware limitations.
-
-
-Repository and checkout directory: `simple_rl78_programming_tool`.
-[GitHub repository](https://github.com/released/simple_rl78_programming_tool).
-The folder/repository rename does not change `Rl78ProgrammerTool.exe`, the
-Visual Studio project names, `rl78_programmer.ini`, or bridge protocol IDs.
-
 Windows GUI and bridge firmware for programming RL78/G15 and RL78/G16 devices
 through Renesas Protocol B. Two primary programmer boards are supported:
 
@@ -334,12 +310,11 @@ decoder may show both two-stop-bit bridge frames and one-stop-bit RL78
 responses. Do not confuse these settings with the PC/VCOM link, which is
 115200 8-N-1.
 
-### 10. Build, test, and clean
+### 10. Build and clean
 
 Common commands:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build_native_tests.ps1 -Configuration Release
 powershell -ExecutionPolicy Bypass -File .\scripts\build_mfc.ps1 -Configuration Release
 powershell -ExecutionPolicy Bypass -File .\scripts\build_nulink2me_keil.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\build_m032_test_board_keil.ps1
@@ -352,31 +327,10 @@ EXE, INI, required DLLs, logs, data, firmware and unknown files remain, includin
 inside obj. Reparse points are rejected before any deletion. PC intermediates,
 local logs and Keil generated directories are excluded by `.gitignore`.
 
-This project uses the documented layered profile: `pc/app`, `pc/sdk`, `shared`,
-`firmware`, `scripts`, `docs`, and `build`. Do not rename `pc` to `src` just for
-appearance: SDK, firmware and normative contracts share these paths. Screenshots
-are under `docs/images`.
+Source layout: `pc/app`, `pc/sdk`, `shared`, `firmware`, `scripts`, `docs` and
+`build`. Screenshots are under `docs/images`.
 
-### 11. GitHub publication and privacy
-
-The repository excludes local output, IDE state, logic-analyzer captures, and
-Keil generated files through `.gitignore`. Before publishing:
-
-1. Run `scripts/clean_mfc.bat`.
-2. Review `git status --short --ignored`.
-3. Search the staged files for user names, customer names, drive-letter paths,
-   private keys, tokens, and passwords.
-4. Do not force-add anything under `build/`, Keil `obj/lst`, `.vs`, `.vscode`,
-   or `*.uvguix.*`.
-5. Publish generated EXE/HEX/BIN files as reviewed release assets if they are
-   required; do not commit local build directories.
-6. Confirm that every third-party PDF, BSP, and vendor source file is permitted
-   for redistribution under its license.
-
-The screenshots in this README use neutral example paths and contain no local
-workstation path.
-
-### 12. More documentation
+### 11. More documentation
 
 - [Architecture and normative documents](docs/README.md)
 - [ADR index](docs/adr/README.md)
@@ -678,12 +632,11 @@ Nu-Link2-Me 使用板上 status LED；最新 mapping 請看
 可能同時看到 bridge 的 two-stop-bit frame 與 RL78 的 one-stop-bit response。
 此設定不同於 PC/VCOM 的 115200 8-N-1。
 
-### 10. Build、test 與 clean
+### 10. Build 與 clean
 
 常用指令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build_native_tests.ps1 -Configuration Release
 powershell -ExecutionPolicy Bypass -File .\scripts\build_mfc.ps1 -Configuration Release
 powershell -ExecutionPolicy Bypass -File .\scripts\build_nulink2me_keil.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\build_m032_test_board_keil.ps1
@@ -695,28 +648,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_m032_test_board_keil.ps
 log、資料、韌體與未知檔案一律保留，即使放在 obj 裡也是如此；刪除前先拒絕
 reparse point。PC 中間檔、本機 log 與 Keil 生成目錄由 `.gitignore` 排除。
 
-本專案採分層架構：`pc/app`、`pc/sdk`、`shared`、`firmware`、`scripts`、`docs`
-與 `build`。為保留 SDK、韌體及規格文件的共用路徑，不單純為外觀把 `pc` 改名
-為 `src`；畫面截圖統一放在 `docs/images`。
+原始碼分布於 `pc/app`、`pc/sdk`、`shared`、`firmware`、`scripts`、`docs`
+與 `build`；畫面截圖放在 `docs/images`。
 
-### 11. GitHub 上傳與隱私檢查
-
-`.gitignore` 已排除本機 output、IDE state、logic-analyzer capture 與 Keil
-生成檔。上傳前：
-
-1. 執行 `scripts/clean_mfc.bat`。
-2. 檢查 `git status --short --ignored`。
-3. 搜尋 staged files 是否包含 user name、customer name、drive-letter path、
-   private key、token、password。
-4. 不可 force-add `build/`、Keil `obj/lst`、`.vs`、`.vscode` 或
-   `*.uvguix.*`。
-5. 若需發布 EXE/HEX/BIN，請作為經審查的 release asset，不要 commit 本機
-   build directory。
-6. 確認第三方 PDF、BSP、vendor source 的 license 允許重新散布。
-
-README 的 GUI 截圖已使用中性的範例路徑，不包含本機 workstation path。
-
-### 12. 其他文件
+### 11. 其他文件
 
 - [架構與 normative documents](docs/README.md)
 - [ADR index](docs/adr/README.md)

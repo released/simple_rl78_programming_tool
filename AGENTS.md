@@ -64,4 +64,4 @@ Before delivery:
 4. Check that every mandatory prompt topic is traced.
 5. Check that no unintended binaries, generated artifacts, vendor sources, or unrelated files were added.
 6. Build native tests and PC Debug/Release after relevant changes; build Keil firmware after board integration changes.
-7. Update `README.md`, `HANDOFF.md`, and `SELF_CHECK.md` with actual results only.
+7. Record actual verification results in `SELF_CHECK.md` and task status in `HANDOFF.md`. Keep `README.md` focused on tool purpose, usage and material safety/compatibility limits; do not append development or completed-task records. Documentation-only changes require document checks, not an application rebuild or full test rerun.
