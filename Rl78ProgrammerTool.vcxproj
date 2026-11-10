@@ -63,5 +63,7 @@
   <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
     <ClCompile><PreprocessorDefinitions>_AFX_NO_MFC_CONTROLS_IN_DIALOGS;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup><PreBuildEvent><Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(ProjectDir)scripts\prepare_tool_build_identity.ps1" -RcFile "$(ProjectDir)pc\app\rl78_programmer.rc" -OutputHeader "$(ProjectDir)pc\app\tool_build_identity.h"</Command></PreBuildEvent></ItemDefinitionGroup>
+  <ItemGroup><ClInclude Include="pc\app\tool_build_display.h" /><ClInclude Include="pc\app\tool_build_identity.h" /><None Include="scripts\prepare_tool_build_identity.ps1" /></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

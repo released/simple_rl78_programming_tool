@@ -37,3 +37,13 @@ demo_code/**/[Kk][Ee][Ii][Ll]/Nu_Link_Driver.ini
 *.tmp
 *.bak
 ~$*
+
+# Prepared build metadata and private engineering records.
+/pc/app/tool_build_identity.h
+/docs/internal/
+/AGENTS.md
+/HANDOFF.md
+/SELF_CHECK.md
+/MANUAL_CLEANUP.md
+/github_push.local.psd1
+/build/Debug/

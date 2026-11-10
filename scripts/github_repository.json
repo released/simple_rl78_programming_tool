@@ -1,0 +1,14 @@
+{
+  "publication_enabled": true,
+  "repository": "released/simple_rl78_programming_tool",
+  "visibility": "PUBLIC",
+  "branch": "main",
+  "readme_title": "RL78 Programmer Tool",
+  "identity_files": [
+    "README.md",
+    "Rl78ProgrammerTool.vcxproj"
+  ],
+  "delivery_files": [
+    "build/Rl78ProgrammerTool.exe"
+  ]
+}

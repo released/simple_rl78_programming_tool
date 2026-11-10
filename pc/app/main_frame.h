@@ -3,6 +3,7 @@
 #include <afxcmn.h>
 #include <afxdlgs.h>
 #include <afxwin.h>
+#include "tool_build_display.h"
 
 #include <array>
 #include <atomic>
@@ -37,6 +38,7 @@ public:
 };
 
 class CMainFrame : public CFrameWnd {
+    native_tool_ui::BuildIdentityLabel build_identity_;
 public:
     CMainFrame();
     ~CMainFrame() override;

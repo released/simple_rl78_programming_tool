@@ -1,11 +1,13 @@
+#include <windows.h>
+#include "tool_build_identity.h"
 #include <winres.h>
 #include "resource.h"
 
 IDR_MAINFRAME ICON "res\\programmer.ico"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,0,2
+ PRODUCTVERSION 1,0,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS VS_FF_DEBUG
@@ -21,11 +23,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Reusable Programmer Platform\0"
             VALUE "FileDescription", "RL78 Programmer Tool\0"
-            VALUE "FileVersion", "1.0.0.001\0"
+            VALUE "FileVersion", "1.0.0.002\0"
             VALUE "InternalName", "Rl78ProgrammerTool.exe\0"
             VALUE "OriginalFilename", "Rl78ProgrammerTool.exe\0"
             VALUE "ProductName", "RL78 Programmer Tool\0"
-            VALUE "ProductVersion", "1.0.0.001\0"
+            VALUE "ProductVersion", "1.0.0.002\0"
+            VALUE "BuildDateTime", TOOL_BUILD_TIMESTAMP_ISO "\0"
         END
     END
     BLOCK "VarFileInfo"

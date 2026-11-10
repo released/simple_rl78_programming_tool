@@ -1,4 +1,5 @@
 #include "main_frame.h"
+#include "tool_build_identity.h"
 
 #include <algorithm>
 #include <chrono>
@@ -510,6 +511,8 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
 
 int CMainFrame::OnCreate(LPCREATESTRUCT create_struct) {
     if (CFrameWnd::OnCreate(create_struct) == -1) return -1;
+    if (!build_identity_.Create(m_hWnd, TOOL_BUILD_VERSION_W, TOOL_BUILD_DISPLAY_TIME_W,
+                                TOOL_BUILD_TIMESTAMP_ISO_W)) return -1;
     CreateControls();
     ApplyFont();
     LoadConfigToUi();
@@ -774,10 +777,13 @@ void CMainFrame::LayoutControls(int cx, int cy) {
     const UINT dpi = GetDpiForWindow(GetSafeHwnd());
     const auto s = [dpi](int value) { return MulDiv(value, static_cast<int>(dpi), 96); };
     const int margin = s(10);
+    build_identity_.SetFont(reinterpret_cast<HFONT>(ui_font_.GetSafeHandle()));
+    build_identity_.Place(cx - margin, margin, (std::max)(0, cx - margin * 2));
+    const int header_height = build_identity_.Height() + margin;
     const int row = s(28);
     const int gap = s(8);
     int x = margin;
-    int y = margin;
+    int y = margin + header_height;
     SafeMove(vid_label_, x, y, s(28), row); x += s(30);
     SafeMove(vid_edit_, x, y, s(76), row); x += s(76) + gap;
     SafeMove(pid_label_, x, y, s(28), row); x += s(30);
