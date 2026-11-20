@@ -454,6 +454,27 @@ sequenceDiagram
 - UI does not call `join` during normal interaction. Close performs bounded cancellation, displays unresolved active job state, then bounded cleanup according to shutdown policy.
 - SDK callbacks are copied into immutable application events and posted to the UI; callbacks never touch controls directly.
 
+The native application uses `ApplicationWorker` as a single-flight executor.
+Completed results remain owned and busy until consumed by the UI timer; progress
+is coalesced in an owned mailbox. No posted heap pointer owns a result. Close
+requests cancellation and keeps the frame alive until the task and SDK shutdown
+finish, without waiting synchronously on the UI thread.
+
+`LoadTargetImage` owns source I/O, content detection and package construction.
+`RunProgramming` accepts an immutable package/profile/job snapshot and the
+`ProgrammingPort` interface. It checks profile UUID/version, package integrity
+and protected section classification before any SDK side effect. The view owns
+confirmation and presentation; it does not perform the programming polling loop.
+Online and connected Offline target programming require explicit confirmation.
+
+A job UUID is allocated before START. A lost START response is reconciled by
+querying that UUID; no second START is issued. Cancel remains a request until an
+authoritative terminal result is received. A lost query or expired reconciliation
+deadline retains the job UUID, last confirmed stage and `OUTCOME_UNKNOWN` in
+status/history. Automatic reconnection and replay are not implied. During close,
+the coordinator limits further polling to two seconds plus the bounded in-flight
+SDK transaction, then records an unknown result if no terminal reply is available.
+
 ### 7.2 MFC Safety and Layout
 
 - Startup/layout/state helpers verify `GetSafeHwnd()` before control calls.

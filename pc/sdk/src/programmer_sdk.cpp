@@ -248,7 +248,25 @@ public:
 };
 
 ProgrammerClient::ProgrammerClient() : impl_(std::make_unique<Impl>()) {}
+ProgrammerClient::ProgrammerClient(std::unique_ptr<detail::ProgrammerTransport> opened_transport,
+                                  int timeout_ms) : ProgrammerClient() {
+    if (!opened_transport || !opened_transport->IsOpen()) {
+        throw ProgrammerException(PLP_ERR_SDK_ARGUMENT, "injected transport must be open");
+    }
+    impl_->transport_ = std::move(opened_transport);
+    impl_->timeout_ms_ = (std::max)(timeout_ms, 100);
+    try {
+        impl_->NegotiateAndOpenSession();
+    } catch (...) {
+        impl_->CloseWithoutCommand();
+        throw;
+    }
+}
 ProgrammerClient::~ProgrammerClient() { Disconnect(); }
+
+std::array<std::uint8_t, 16> ProgrammerClient::CreateJobUuid() {
+    return NewOperationUuid(3);
+}
 
 std::vector<DeviceDescriptor> ProgrammerClient::Enumerate(std::uint16_t vendor_id,
                                                           std::uint16_t product_id,
@@ -553,17 +571,46 @@ std::array<std::uint8_t, 16> ProgrammerClient::StartProgram(
     const std::array<std::uint8_t, 16>& profile_uuid,
     std::uint16_t program_flags) {
     const auto job_uuid = NewOperationUuid(3);
+    StartProgramWithId(job_uuid, source_kind, source_uuid, profile_uuid, program_flags);
+    return job_uuid;
+}
+
+void ProgrammerClient::StartProgramWithId(
+    const std::array<std::uint8_t, 16>& job_uuid, std::uint8_t source_kind,
+    const std::array<std::uint8_t, 16>& source_uuid,
+    const std::array<std::uint8_t, 16>& profile_uuid, std::uint16_t program_flags) {
     std::vector<std::uint8_t> request(52, std::uint8_t{0});
     std::copy(job_uuid.begin(), job_uuid.end(), request.begin());
     request[16] = source_kind;
     Rpp_WriteLe16(request.data() + 18, program_flags);
     std::copy(source_uuid.begin(), source_uuid.end(), request.begin() + 20);
     std::copy(profile_uuid.begin(), profile_uuid.end(), request.begin() + 36);
-    const auto response = impl_->Transact(PLP_CMD_PROGRAM_START, request);
-    if (response.size() < 16 || !std::equal(job_uuid.begin(), job_uuid.end(), response.begin())) {
-        throw ProgrammerException(PLP_ERR_PROGRAM_JOB_CONFLICT, "PROGRAM_START returned a different job UUID");
+    // START is sent once. The application already owns the UUID needed for
+    // read-only reconciliation if the response is lost.
+    std::vector<std::uint8_t> response;
+    try {
+        response = impl_->Transact(PLP_CMD_PROGRAM_START, request, false);
+    } catch (const ProgrammerException& error) {
+        switch (error.status()) {
+        case PLP_ERR_USB_TIMEOUT:
+        case PLP_ERR_UART_TIMEOUT:
+        case PLP_ERR_USB_ACCESS:
+        case PLP_ERR_UART_ACCESS:
+        case PLP_ERR_USB_REMOVED:
+        case PLP_ERR_UART_REMOVED:
+        case PLP_ERR_CRC:
+        case PLP_ERR_BAD_FLAGS:
+        case PLP_ERR_BAD_LENGTH:
+        case PLP_ERR_BAD_MAGIC:
+            throw ProgrammerException(PLP_ERR_OUTCOME_UNKNOWN,
+                                      "PROGRAM_START response uncertain; query the same job UUID");
+        default:
+            throw;
+        }
     }
-    return job_uuid;
+    if (response.size() < 16 || !std::equal(job_uuid.begin(), job_uuid.end(), response.begin())) {
+        throw ProgrammerException(PLP_ERR_OUTCOME_UNKNOWN, "PROGRAM_START returned an invalid job identity");
+    }
 }
 
 JobStatus ProgrammerClient::QueryJob(const std::array<std::uint8_t, 16>& job_uuid) {
@@ -574,6 +621,9 @@ JobStatus ProgrammerClient::QueryJob(const std::array<std::uint8_t, 16>& job_uui
     }
     JobStatus status;
     std::copy_n(response.begin(), 16, status.job_uuid.begin());
+    if (status.job_uuid != job_uuid) {
+        throw ProgrammerException(PLP_ERR_PROGRAM_JOB_CONFLICT, "PROGRAM_GET_JOB returned a different job UUID");
+    }
     status.operation_state = response[16];
     status.stage = response[17];
     status.terminal_result = response[18];

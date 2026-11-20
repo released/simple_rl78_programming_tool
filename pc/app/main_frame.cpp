@@ -1,5 +1,6 @@
 #include "main_frame.h"
 #include "tool_build_identity.h"
+#include "image_loading.h"
 
 #include <algorithm>
 #include <chrono>
@@ -18,8 +19,7 @@
 
 namespace {
 
-constexpr UINT kWorkerProgressMessage = WM_APP + 100;
-constexpr UINT kWorkerDoneMessage = WM_APP + 101;
+constexpr UINT_PTR kWorkerTimer = 100;
 constexpr std::array<std::wstring_view, 5> kBridgeWorkflowLabels = {
     L"Step 1  Browse + Load + Validate",
     L"Step 2  Return Bootloader",
@@ -89,26 +89,6 @@ std::wstring NarrowToWide(const char* text) {
     return value;
 }
 
-std::vector<std::uint8_t> ReadFileBytes(const std::wstring& path) {
-    std::ifstream stream(std::filesystem::path(path), std::ios::binary);
-    if (!stream) {
-        throw std::runtime_error("cannot open input file");
-    }
-    stream.seekg(0, std::ios::end);
-    const auto length = stream.tellg();
-    if (length < 0) {
-        throw std::runtime_error("cannot determine input file size");
-    }
-    stream.seekg(0, std::ios::beg);
-    std::vector<std::uint8_t> data(static_cast<std::size_t>(length));
-    if (!data.empty()) {
-        stream.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(data.size()));
-    }
-    if (!stream) {
-        throw std::runtime_error("failed to read input file");
-    }
-    return data;
-}
 
 std::wstring NowText() {
     SYSTEMTIME time{};
@@ -485,8 +465,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_BN_CLICKED(IDC_HISTORY_CLEAR, &CMainFrame::OnClearHistory)
     ON_BN_CLICKED(IDC_LOG_CLEAR, &CMainFrame::OnClearLog)
     ON_BN_CLICKED(IDC_LOG_FILE_ENABLE, &CMainFrame::OnToggleFileLog)
-    ON_MESSAGE(kWorkerProgressMessage, &CMainFrame::OnWorkerProgress)
-    ON_MESSAGE(kWorkerDoneMessage, &CMainFrame::OnWorkerDone)
+    ON_WM_TIMER()
     ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
@@ -494,9 +473,6 @@ CMainFrame::CMainFrame() = default;
 
 CMainFrame::~CMainFrame() {
     cancel_requested_.store(true);
-    if (worker_.joinable()) {
-        worker_.join();
-    }
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
@@ -956,7 +932,7 @@ void CMainFrame::ApplyBoardProfile() {
 }
 
 void CMainFrame::OnBoardProfileChanged() {
-    if (worker_running_.load()) {
+    if (worker_.IsBusy() || closing_.load()) {
         return;
     }
     if (client_.IsConnected()) {
@@ -1006,13 +982,15 @@ void CMainFrame::ShowSelectedTab() {
 }
 
 void CMainFrame::UpdateUiState() {
-    const bool busy = worker_running_.load();
-    const bool connected = client_.IsConnected();
+    const bool busy = worker_.IsBusy() || closing_.load();
+    // SDK ownership belongs to the current task while busy.
+    const bool connected = busy ? false : client_.IsConnected();
     const bool uart = IsUartBoardSelected();
     const bool validated_source_matches =
         validated_image_source_.Matches(ControlText(mot_path_));
     const bool validated_package =
-        package_.has_value() && validated_source_matches;
+        package_.has_value() && validated_source_matches &&
+        package_->target_profile_uuid == SelectedTargetProfile().uuid;
     const bool downloaded_matches_package = validated_package &&
         downloaded_package_uuid_ == package_->package_uuid;
     const bool active_matches_package = validated_package &&
@@ -1034,7 +1012,7 @@ void CMainFrame::UpdateUiState() {
     target_profile_combo_.EnableWindow(!busy);
     signature_button_.EnableWindow(FALSE);
     online_button_.EnableWindow(!busy && connected && validated_package);
-    cancel_button_.EnableWindow(busy);
+    cancel_button_.EnableWindow(worker_.IsBusy() && !closing_.load());
     oip_save_.EnableWindow(!busy && validated_package);
     oip_download_.EnableWindow(!busy && connected && validated_package);
     oip_activate_.EnableWindow(!busy && connected && downloaded_matches_package);
@@ -1054,7 +1032,7 @@ void CMainFrame::UpdateUiState() {
     bridge_fw_upload_.EnableWindow(!busy && bridge_firmware_image_.has_value() &&
         bridge_fw_device_combo_.GetCurSel() >= 0);
     bridge_fw_run_.EnableWindow(!busy && bridge_fw_device_combo_.GetCurSel() >= 0);
-    bridge_fw_cancel_.EnableWindow(busy);
+    bridge_fw_cancel_.EnableWindow(worker_.IsBusy() && !closing_.load());
 }
 
 void CMainFrame::UpdateOperatingModeText() {
@@ -1204,35 +1182,41 @@ std::wstring CMainFrame::ControlText(const CWnd& control) const {
 
 void CMainFrame::StartWorker(WorkKind kind,
                              std::function<std::unique_ptr<WorkerResult>()> work) {
-    if (worker_running_.exchange(true)) return;
-    JoinCompletedWorker();
+    if (worker_.IsBusy() || (closing_.load() && kind != WorkKind::Shutdown)) return;
+    if (SetTimer(kWorkerTimer, 50, nullptr) == 0) {
+        closing_.store(false);
+        MessageBoxW(L"Cannot start background completion timer.", L"RL78 Programmer", MB_OK | MB_ICONERROR);
+        return;
+    }
     cancel_requested_.store(false);
+    try {
+        worker_.Start([kind, work = std::move(work)]() mutable {
+            std::unique_ptr<WorkerResult> result;
+            try {
+                result = work();
+                if (!result) result = std::make_unique<WorkerResult>();
+                result->success = true;
+            } catch (const rl78_programmer::sdk::ProgrammerException& ex) {
+                result = std::make_unique<WorkerResult>();
+                result->error_status = ex.status();
+                result->message = L"Programmer error " + rl78_programmer::sdk::ErrorName(ex.status()) +
+                                  L": " + NarrowToWide(ex.what());
+            } catch (const std::exception& ex) {
+                result = std::make_unique<WorkerResult>();
+                result->message = NarrowToWide(ex.what());
+            } catch (...) {
+                result = std::make_unique<WorkerResult>();
+                result->message = L"Background operation failed.";
+            }
+            result->kind = kind;
+            return result;
+        });
+    } catch (const std::exception& ex) {
+        KillTimer(kWorkerTimer);
+        closing_.store(false);
+        MessageBoxW(NarrowToWide(ex.what()).c_str(), L"RL78 Programmer", MB_OK | MB_ICONERROR);
+    }
     UpdateUiState();
-    worker_ = std::thread([this, kind, work = std::move(work)]() mutable {
-        std::unique_ptr<WorkerResult> result;
-        try {
-            result = work();
-            if (!result) result = std::make_unique<WorkerResult>();
-            result->success = true;
-        } catch (const rl78_programmer::sdk::ProgrammerException& ex) {
-            result = std::make_unique<WorkerResult>();
-            result->error_status = ex.status();
-            result->message = L"Programmer error " + rl78_programmer::sdk::ErrorName(ex.status()) +
-                              L": " + NarrowToWide(ex.what());
-        } catch (const std::exception& ex) {
-            result = std::make_unique<WorkerResult>();
-            result->message = NarrowToWide(ex.what());
-        }
-        result->kind = kind;
-        worker_running_.store(false);
-        if (!closing_.load() && PostMessageW(kWorkerDoneMessage, 0, reinterpret_cast<LPARAM>(result.get()))) {
-            result.release();
-        }
-    });
-}
-
-void CMainFrame::JoinCompletedWorker() {
-    if (worker_.joinable() && !worker_running_.load()) worker_.join();
 }
 
 void CMainFrame::PostProgress(WorkKind kind,
@@ -1242,19 +1226,35 @@ void CMainFrame::PostProgress(WorkKind kind,
                               std::uint64_t load_total_bytes,
                               std::uint64_t programmed_bytes,
                               std::uint64_t program_total_bytes) {
-    auto progress = std::make_unique<WorkerProgress>();
-    progress->kind = kind;
-    progress->basis_points = basis_points;
-    progress->loaded_bytes = loaded_bytes;
-    progress->load_total_bytes = load_total_bytes;
-    progress->programmed_bytes = programmed_bytes;
-    progress->program_total_bytes = program_total_bytes;
-    progress->message = message;
-    if (!closing_.load() && PostMessageW(kWorkerProgressMessage, 0, reinterpret_cast<LPARAM>(progress.get()))) {
-        progress.release();
-    }
+    WorkerProgress progress;
+    progress.kind = kind;
+    progress.basis_points = basis_points;
+    progress.loaded_bytes = loaded_bytes;
+    progress.load_total_bytes = load_total_bytes;
+    progress.programmed_bytes = programmed_bytes;
+    progress.program_total_bytes = program_total_bytes;
+    progress.message = message;
+    worker_.Publish(std::move(progress));
 }
 
+void CMainFrame::OnTimer(UINT_PTR timer) {
+    if (timer != kWorkerTimer) {
+        CFrameWnd::OnTimer(timer);
+        return;
+    }
+    auto progress = worker_.TakeProgress();
+    if (progress && !closing_.load()) {
+        OnWorkerProgress(0, reinterpret_cast<LPARAM>(progress.release()));
+    }
+    auto result = worker_.TakeResult();
+    if (result) {
+        KillTimer(kWorkerTimer);
+        // Closing keeps the frame alive until the owned task quiesces. Results
+        // are consumed on this UI thread, including terminal unknown evidence.
+        OnWorkerDone(0, reinterpret_cast<LPARAM>(result.release()));
+        if (closing_.load()) OnClose();
+    }
+}
 void CMainFrame::SetProgressDisplay(WorkKind kind,
                                     std::uint16_t basis_points,
                                     std::uint64_t loaded_bytes,
@@ -1424,6 +1424,7 @@ void CMainFrame::SetOfflineWorkflowFailure(WorkKind kind) {
 }
 
 void CMainFrame::OnScan() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const auto vid = ReadHexControl(vid_edit_, 0x0416u);
     const auto pid = ReadHexControl(pid_edit_, 0x5020u);
     const bool uart = IsUartBoardSelected();
@@ -1442,6 +1443,7 @@ void CMainFrame::OnScan() {
 }
 
 void CMainFrame::OnConnect() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const int index = device_combo_.GetCurSel();
     if (index < 0 || static_cast<std::size_t>(index) >= devices_.size()) return;
     const auto descriptor = devices_[static_cast<std::size_t>(index)];
@@ -1486,6 +1488,7 @@ void CMainFrame::OnConnect() {
 }
 
 void CMainFrame::OnDisconnect() {
+    if (worker_.IsBusy() || closing_.load()) return;
     client_.Disconnect();
     connected_offline_button_ = false;
     oip_download_.SetWindowTextW(L"Download to Board Storage");
@@ -1500,6 +1503,7 @@ void CMainFrame::OnDisconnect() {
 }
 
 void CMainFrame::OnResetMcu() {
+    if (worker_.IsBusy() || closing_.load()) return;
     if (!client_.IsConnected()) return;
     const bool uart = IsUartBoardSelected();
     SetStatus(L"Resetting bridge MCU...");
@@ -1516,6 +1520,7 @@ void CMainFrame::OnResetMcu() {
 }
 
 void CMainFrame::OnBrowseMot() {
+    if (worker_.IsBusy() || closing_.load()) return;
     CFileDialog dialog(TRUE, L"mot", nullptr, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
                        L"RL78 firmware (*.mot;*.srec;*.s19;*.hex;*.bin)|*.mot;*.srec;*.s19;*.hex;*.bin|Motorola S-record / Intel HEX (*.mot;*.srec;*.s19;*.hex)|*.mot;*.srec;*.s19;*.hex|Raw binary (*.bin)|*.bin|All files (*.*)|*.*||",
                        this);
@@ -1565,6 +1570,7 @@ void CMainFrame::OnMotPathChanged() {
 }
 
 void CMainFrame::OnLoadMot() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const auto path = ControlText(mot_path_);
     const auto target_profile = SelectedTargetProfile();
     if (path.empty()) return;
@@ -1583,46 +1589,14 @@ void CMainFrame::OnLoadMot() {
     StartWorker(WorkKind::LoadImage, [path, target_profile]() {
         auto result = std::make_unique<WorkerResult>();
         result->image_source_path = path;
-        auto source = ReadFileBytes(path);
-        result->load_total_bytes = source.size();
-        std::array<std::uint8_t, 32> source_hash{};
-        Rpp_Sha256(source.data(), source.size(), source_hash.data());
-        if (source.empty()) throw std::runtime_error("firmware image is empty");
-        auto extension = std::filesystem::path(path).extension().wstring();
-        std::transform(extension.begin(), extension.end(), extension.begin(),
-                       [](wchar_t value) { return static_cast<wchar_t>(std::towlower(value)); });
-        rl78_programmer::SRecordImage image;
-        std::wstring source_format = L"raw binary";
-        bool extension_mismatch = false;
-        if (extension == L".bin") {
-            if (source.size() > static_cast<std::size_t>(UINT32_MAX)) {
-                throw std::runtime_error("raw binary image is too large");
-            }
-            rl78_programmer::ImageSegment segment;
-            segment.address = 0u;
-            segment.data = std::move(source);
-            image.segments.push_back(std::move(segment));
-            image.source_record_count = 1u;
-        } else {
-            const std::string_view source_text(
-                reinterpret_cast<const char*>(source.data()), source.size());
-            const auto format = rl78_programmer::DetectAddressedTextImageFormat(source_text);
-            source_format = NarrowToWide(rl78_programmer::AddressedTextImageFormatName(format));
-            extension_mismatch = extension == L".mot" &&
-                format == rl78_programmer::AddressedTextImageFormat::IntelHex;
-            image = rl78_programmer::ParseAddressedTextImage(source_text);
-        }
-        rl78_programmer::OipBuildOptions options;
-        options.target_profile = target_profile;
-        options.project_name = target_profile.display_name + " Project";
-        options.source_name = std::filesystem::path(path).filename().u8string();
-        options.source_sha256 = source_hash;
-        auto package = rl78_programmer::BuildOfflineImagePackage(image, options);
-        result->message = (extension_mismatch
-                               ? L"Notice: .mot file contains Intel HEX content. "
-                               : L"Detected " + source_format + L". ") +
-                           L"Validated " + std::to_wstring(image.DataSize()) +
-                           L" bytes in " + std::to_wstring(image.segments.size()) + L" source segment(s).";
+        auto loaded = rl78_programmer::app::LoadTargetImage(path, target_profile);
+        result->load_total_bytes = loaded.source_size;
+        auto image = std::move(loaded.image);
+        auto package = std::move(loaded.package);
+        result->message = (loaded.intel_hex_mot
+            ? L"Notice: .mot file contains Intel HEX content. " : L"") +
+            std::wstring(L"Validated ") + std::to_wstring(image.DataSize()) +
+            L" bytes in " + std::to_wstring(image.segments.size()) + L" source segment(s).";
         result->program_total_bytes = image.DataSize();
         result->image = std::move(image);
         result->package = std::move(package);
@@ -1631,6 +1605,7 @@ void CMainFrame::OnLoadMot() {
 }
 
 void CMainFrame::OnTargetProfileChanged() {
+    if (worker_.IsBusy() || closing_.load()) return;
     validated_image_source_.Clear();
     package_.reset();
     image_.reset();
@@ -1648,6 +1623,7 @@ void CMainFrame::OnTargetProfileChanged() {
 }
 
 void CMainFrame::OnReadSignature() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const auto profile_uuid = SelectedTargetProfile().uuid;
     StartWorker(WorkKind::ReadSignature, [this, profile_uuid]() {
         auto result = std::make_unique<WorkerResult>();
@@ -1660,6 +1636,7 @@ void CMainFrame::OnReadSignature() {
 }
 
 void CMainFrame::OnProgramOnline() {
+    if (worker_.IsBusy() || closing_.load()) return;
     if (!package_ ||
         !validated_image_source_.Matches(ControlText(mot_path_))) {
         program_status_.SetWindowTextW(
@@ -1668,6 +1645,18 @@ void CMainFrame::OnProgramOnline() {
         return;
     }
     const auto& profile = SelectedTargetProfile();
+    const auto approved_package_uuid = package_->package_uuid;
+    const int choice = MessageBoxW(
+        (L"Erase, program and verify target Code Flash using " +
+         NarrowToWide(profile.display_name.c_str()) +
+         L"?\r\nOption/security bytes included in the validated image follow its protected-region policy.").c_str(),
+        L"Program target", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+    if (choice != IDYES || worker_.IsBusy() || closing_.load() || !package_ ||
+        SelectedTargetProfile().uuid != profile.uuid ||
+        package_->package_uuid != approved_package_uuid ||
+        !validated_image_source_.Matches(ControlText(mot_path_))) return;
+    const rl78_programmer::app::ProgrammingRequest request{
+        *package_, SelectedTargetProfile(), rl78_programmer::sdk::ProgrammerClient::CreateJobUuid(), 0};
     AppendLog(L"event=JOB_START mode=Online profile=" +
               NarrowToWide(profile.display_name.c_str()) +
               L" source=" + ControlText(mot_path_) +
@@ -1682,7 +1671,7 @@ void CMainFrame::OnProgramOnline() {
     SetProgressDisplay(WorkKind::ProgramOnline, 0, 0,
                        package_->bytes.size(), 0,
                        image_ ? image_->DataSize() : 0u);
-    StartWorker(WorkKind::ProgramOnline, [this]() { return RunProgram(WorkKind::ProgramOnline, 0); });
+    StartWorker(WorkKind::ProgramOnline, [this, request]() { return RunProgram(WorkKind::ProgramOnline, request); });
 }
 
 void CMainFrame::OnCancelJob() {
@@ -1711,6 +1700,7 @@ void CMainFrame::OnSaveOip() {
 }
 
 void CMainFrame::OnDownloadOip() {
+    if (worker_.IsBusy() || closing_.load()) return;
     if (!package_) return;
     downloaded_package_uuid_.fill(0);
     active_package_uuid_.fill(0);
@@ -1750,6 +1740,7 @@ void CMainFrame::OnDownloadOip() {
 }
 
 void CMainFrame::OnActivateOip() {
+    if (worker_.IsBusy() || closing_.load()) return;
     if (!package_ || downloaded_package_uuid_ != package_->package_uuid) return;
     const auto package_uuid = package_->package_uuid;
     SetOfflineWorkflowState(OfflineWorkflowStep::ActivatePackage,
@@ -1768,8 +1759,17 @@ void CMainFrame::OnActivateOip() {
 }
 
 void CMainFrame::OnProgramOffline() {
+    if (worker_.IsBusy() || closing_.load()) return;
     if (!package_ || IsZeroUuid(active_package_uuid_) ||
         active_package_uuid_ != package_->package_uuid) return;
+    const auto approved_package_uuid = package_->package_uuid;
+    if (MessageBoxW(L"Erase, program and verify the connected target using the active offline package?",
+        L"Program target", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) != IDYES) return;
+    if (worker_.IsBusy() || closing_.load() || !package_ ||
+        package_->package_uuid != approved_package_uuid ||
+        active_package_uuid_ != package_->package_uuid) return;
+    const rl78_programmer::app::ProgrammingRequest request{
+        *package_, SelectedTargetProfile(), rl78_programmer::sdk::ProgrammerClient::CreateJobUuid(), 1};
     AppendLog(L"event=JOB_START mode=Offline package=" +
               rl78_programmer::sdk::FormatUuid(active_package_uuid_));
     SetProgressDisplay(WorkKind::ProgramOffline, 0);
@@ -1782,10 +1782,11 @@ void CMainFrame::OnProgramOffline() {
                        ProgrammerBoardProfile::Nulink2MeUsb
                    ? L"Testing the active SPI Flash package through the connected HID session..."
                    : L"Testing the active stored package through the connected HID session..."));
-    StartWorker(WorkKind::ProgramOffline, [this]() { return RunProgram(WorkKind::ProgramOffline, 1); });
+    StartWorker(WorkKind::ProgramOffline, [this, request]() { return RunProgram(WorkKind::ProgramOffline, request); });
 }
 
 void CMainFrame::OnArmOffline() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const auto generation = operating_mode_.generation;
     const bool offline_button = connected_offline_button_;
     const auto board_profile = SelectedBoardProfile();
@@ -1815,6 +1816,7 @@ void CMainFrame::OnArmOffline() {
 }
 
 void CMainFrame::OnSwitchOnline() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const auto generation = operating_mode_.generation;
     SetOfflineWorkflowState(OfflineWorkflowStep::ArmOffline,
                             WorkflowState::Pending);
@@ -1830,6 +1832,7 @@ void CMainFrame::OnSwitchOnline() {
 }
 
 void CMainFrame::OnBrowseBridgeFirmware() {
+    if (worker_.IsBusy() || closing_.load()) return;
     CFileDialog dialog(TRUE, L"bin", nullptr,
                        OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
                        L"Bridge application binary (*.bin)|*.bin|All files (*.*)|*.*||",
@@ -1851,6 +1854,7 @@ void CMainFrame::OnBrowseBridgeFirmware() {
 }
 
 void CMainFrame::OnBridgeFirmwareProfileChanged() {
+    if (worker_.IsBusy() || closing_.load()) return;
     bridge_firmware_image_.reset();
     SetBridgeWorkflowState(BridgeWorkflowStep::LoadAndValidate,
                            WorkflowState::Pending);
@@ -1865,6 +1869,7 @@ void CMainFrame::OnBridgeFirmwareProfileChanged() {
 }
 
 void CMainFrame::OnLoadBridgeFirmware() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const auto path = ControlText(bridge_fw_path_);
     const auto target = SelectedBridgeFirmwareTarget();
     if (path.empty()) return;
@@ -1892,6 +1897,7 @@ void CMainFrame::OnLoadBridgeFirmware() {
 }
 
 void CMainFrame::OnReturnBootloader() {
+    if (worker_.IsBusy() || closing_.load()) return;
     if (!client_.IsConnected()) return;
     const bool uart = IsUartBoardSelected();
     const std::wstring prompt =
@@ -1902,7 +1908,7 @@ void CMainFrame::OnReturnBootloader() {
     const int choice = MessageBoxW(
         prompt.c_str(),
         L"Return Boot loader", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
-    if (choice != IDYES) return;
+    if (choice != IDYES || worker_.IsBusy() || closing_.load()) return;
     bridge_firmware_updater_.Disconnect();
     bootloader_devices_.clear();
     bridge_fw_device_combo_.ResetContent();
@@ -1932,6 +1938,7 @@ void CMainFrame::OnReturnBootloader() {
 }
 
 void CMainFrame::OnScanBridgeBootloader() {
+    if (worker_.IsBusy() || closing_.load()) return;
     bridge_firmware_updater_.Disconnect();
     bootloader_devices_.clear();
     bridge_fw_device_combo_.ResetContent();
@@ -2021,6 +2028,7 @@ void CMainFrame::OnScanBridgeBootloader() {
 }
 
 void CMainFrame::OnUploadBridgeFirmware() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const int index = bridge_fw_device_combo_.GetCurSel();
     if (!bridge_firmware_image_ || index < 0 ||
         static_cast<std::size_t>(index) >= bootloader_devices_.size()) return;
@@ -2065,6 +2073,7 @@ void CMainFrame::OnUploadBridgeFirmware() {
 }
 
 void CMainFrame::OnRunBridgeApplication() {
+    if (worker_.IsBusy() || closing_.load()) return;
     const int index = bridge_fw_device_combo_.GetCurSel();
     if (index < 0 || static_cast<std::size_t>(index) >= bootloader_devices_.size()) return;
     const auto descriptor = bootloader_devices_[static_cast<std::size_t>(index)];
@@ -2099,84 +2108,29 @@ void CMainFrame::OnCancelBridgeFirmware() {
 }
 
 std::unique_ptr<CMainFrame::WorkerResult> CMainFrame::RunProgram(WorkKind kind,
-                                                                std::uint8_t source_kind) {
+    const rl78_programmer::app::ProgrammingRequest& request) {
     auto result = std::make_unique<WorkerResult>();
-    result->kind = kind;
-    std::array<std::uint8_t, 16> source{};
-    std::uint64_t load_total_bytes = 0;
-    std::uint64_t program_total_bytes = image_ ? image_->DataSize() : 0u;
-    if (source_kind == 0) {
-        if (!package_) throw std::runtime_error("no validated package");
-        load_total_bytes = package_->bytes.size();
-        client_.DownloadPackage(*package_,
-                                [this, kind, load_total_bytes, program_total_bytes]
-                                (std::uint16_t value, const std::wstring& text) {
-            const std::uint64_t loaded_bytes =
-                (load_total_bytes * value) / 10000u;
-            PostProgress(kind,
-                         static_cast<std::uint16_t>(value / 4u),
-                         text,
-                         loaded_bytes,
-                         load_total_bytes,
-                         0,
-                         program_total_bytes);
+    rl78_programmer::app::SdkProgrammingPort port(client_);
+    result->job = rl78_programmer::app::RunProgramming(port, request,
+        [this]() { return cancel_requested_.load(); },
+        [this]() { return closing_.load(); },
+        [this, kind](const rl78_programmer::app::ProgrammingProgress& value) {
+            PostProgress(kind, value.basis_points,
+                value.load_total != 0 && value.loaded < value.load_total ?
+                    L"Staging image; cancellation will stop before target programming." :
+                    L"Programming stage: " + rl78_programmer::sdk::StageName(value.job.stage),
+                value.loaded, value.load_total, value.job.current, value.job.total);
         });
-        source = package_->package_uuid;
-    } else {
-        source = active_package_uuid_;
+    const auto& job = *result->job;
+    result->message = L"Programming " + rl78_programmer::sdk::TerminalResultName(job.terminal_result) +
+        L" | Stage " + rl78_programmer::sdk::StageName(job.stage) +
+        L" | Error " + rl78_programmer::sdk::ErrorName(job.error) +
+        L" | Job " + rl78_programmer::sdk::FormatUuid(job.job_uuid);
+    if (job.terminal_result == PLP_TERMINAL_OUTCOME_UNKNOWN) {
+        result->message += L" | Target state is unconfirmed. Preserve power and inspect the target before another programming attempt.";
     }
-    std::array<std::uint8_t, 16> profile_uuid{};
-    if (source_kind == 0 && package_) profile_uuid = package_->target_profile_uuid;
-    const auto job = client_.StartProgram(source_kind, source, profile_uuid);
-    active_job_uuid_ = job;
-    bool cancel_sent = false;
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::minutes(10);
-    for (;;) {
-        if (cancel_requested_.load() && !cancel_sent) {
-            static_cast<void>(client_.CancelJob(job));
-            cancel_sent = true;
-        }
-        auto status = client_.QueryJob(job);
-        const std::uint16_t overall_basis_points = source_kind == 0 ?
-            static_cast<std::uint16_t>(2500u +
-                (static_cast<std::uint32_t>(status.progress_basis_points) * 3u) / 4u) :
-            status.progress_basis_points;
-        const std::uint64_t reported_total = status.total != 0u ?
-            status.total : program_total_bytes;
-        PostProgress(kind,
-                     overall_basis_points,
-                     L"Programming stage: " +
-                         rl78_programmer::sdk::StageName(status.stage),
-                     load_total_bytes,
-                     load_total_bytes,
-                     status.current,
-                     reported_total);
-        if (status.operation_state >= PLP_OPERATION_COMPLETED) {
-            result->job = status;
-            if (status.terminal_result == PLP_TERMINAL_PASS) {
-                result->message = L"Programming PASS";
-            } else {
-                result->message =
-                    L"Programming FAIL | Stage " +
-                    rl78_programmer::sdk::StageName(status.stage) +
-                    L" (" + std::to_wstring(status.stage) +
-                    L") | Error " +
-                    rl78_programmer::sdk::ErrorName(status.error) +
-                    L" (" + HexValue(status.error, 8) +
-                    L") | Detail " + HexDetail(status.detail) +
-                    L" | Attempt " + std::to_wstring(status.attempt);
-            }
-            active_job_uuid_.fill(0);
-            return result;
-        }
-        if (std::chrono::steady_clock::now() >= deadline) {
-            throw rl78_programmer::sdk::ProgrammerException(PLP_ERR_OUTCOME_UNKNOWN,
-                                                             "job polling deadline expired");
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-    }
+    return result;
 }
-
 rl78_programmer::TargetProfile CMainFrame::SelectedTargetProfile() const {
     switch (target_profile_combo_.GetCurSel()) {
     case 0:
@@ -2186,8 +2140,9 @@ rl78_programmer::TargetProfile CMainFrame::SelectedTargetProfile() const {
     case 3:
         return rl78_programmer::Rl78G16_32KTargetProfile();
     case 1:
-    default:
         return rl78_programmer::Rl78G15_8KTargetProfile();
+    default:
+        return {};
     }
 }
 
@@ -2277,7 +2232,6 @@ LRESULT CMainFrame::OnWorkerProgress(WPARAM, LPARAM parameter) {
 
 LRESULT CMainFrame::OnWorkerDone(WPARAM, LPARAM parameter) {
     std::unique_ptr<WorkerResult> result(reinterpret_cast<WorkerResult*>(parameter));
-    JoinCompletedWorker();
     if (!result) return 0;
     if (result->success && result->kind == WorkKind::LoadImage &&
         result->image_source_path != ControlText(mot_path_)) {
@@ -2325,12 +2279,15 @@ LRESULT CMainFrame::OnWorkerDone(WPARAM, LPARAM parameter) {
         } else {
             offline_status_.SetWindowTextW(result->message.c_str());
         }
-        MessageBoxW(result->message.c_str(), L"RL78 Programmer", MB_OK | MB_ICONERROR);
+        if (!closing_.load()) MessageBoxW(result->message.c_str(), L"RL78 Programmer", MB_OK | MB_ICONERROR);
         UpdateUiState();
         return 0;
     }
     AppendLog(result->message);
     switch (result->kind) {
+    case WorkKind::Shutdown:
+        shutdown_complete_ = true;
+        break;
     case WorkKind::Scan:
         devices_ = std::move(result->devices);
         device_combo_.ResetContent();
@@ -2699,13 +2656,23 @@ bool CMainFrame::IsZeroUuid(const std::array<std::uint8_t, 16>& uuid) {
 void CMainFrame::OnClose() {
     closing_.store(true);
     cancel_requested_.store(true);
-    if (worker_.joinable()) worker_.join();
+    if (worker_.IsBusy()) {
+        SetStatus(L"Closing / cancellation pending; waiting for safe outcome...");
+        UpdateUiState();
+        return;
+    }
+    if (!shutdown_complete_) {
+        StartWorker(WorkKind::Shutdown, [this]() {
+            client_.Disconnect();
+            bridge_firmware_updater_.Disconnect();
+            return std::make_unique<WorkerResult>();
+        });
+        return;
+    }
     if (session_file_logger_.IsOpen()) {
         AppendLog(L"event=APPLICATION_CLOSE");
         session_file_logger_.Close();
     }
-    client_.Disconnect();
-    bridge_firmware_updater_.Disconnect();
     SaveConfigFromUi();
     CFrameWnd::OnClose();
 }

@@ -51,7 +51,7 @@ This matrix proves that the original request is assigned to a normative design a
 | --- | --- | --- | --- | --- |
 | GUI-001 | Main window/device/image/download/offline/monitor/info/project/errors/progress/history/config/language/version/CRC | GSDS §§3–5 | GUI-UNIT/UI-001..030 | Designed |
 | GUI-002 | MOT parser/image builder/task queue/logger/dispatcher | GSDS §§3, 7–10 | GUI-UNIT-IMG/TASK/LOG | Designed |
-| GUI-003 | Responsive background processing/cancellation | GSDS §§5, 7 | GUI-STRESS-001..010 | Designed |
+| GUI-003 | Responsive background processing/cancellation | GSDS §§5, 7 | PC contract fake-SDK/transport checks and native MFC worker/close checks | Native single-flight executor, immutable programming snapshot, safe cancellation and unknown-result handling implemented; physical acceptance remains separate |
 | GUI-004 | Future plug-ins for device/protocol/parser/report | SAS §§3.3, 12; GSDS §11 | PLUGIN-001..012 | Designed |
 | GUI-005 | Multilingual/DPI-stable MFC UI with a maximized initial main-frame state and standard restore/minimize/maximize controls | GSDS §§4.1, 7.2 | UI-DPI-LANG-001 and MFC Debug/Release | Implemented |
 | GUI-006 | `FW Upload (USB HID)` tab with board profile, separate app BIN validation, five workflow rows with completed-row gray treatment, Return Boot loader, full HID-path ISP scan/select, explicit next-step guidance when validation is missing, stale-selection invalidation, pre-erase selected-profile/reported-application-geometry binding, byte/percent progress, upload/cancel/run | GSDS §§3, 4.1, 6.3 | GUI-FWU-001..015 and MFC Debug/Release | Implemented / physical transition pending |

@@ -33,6 +33,9 @@
     <ClCompile Include="pc\app\app.cpp" />
     <ClCompile Include="pc\app\app_config.cpp" />
     <ClCompile Include="pc\app\main_frame.cpp" />
+    <ClCompile Include="pc\app\image_loading.cpp" />
+    <ClCompile Include="pc\app\programming_job.cpp" />
+    <ClCompile Include="pc\app\sdk_programming_port.cpp" />
     <ClCompile Include="pc\app\session_file_logger.cpp" />
     <ClCompile Include="pc\sdk\src\bridge_firmware_image.cpp" />
     <ClCompile Include="pc\sdk\src\bridge_firmware_updater.cpp" />

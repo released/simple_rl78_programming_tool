@@ -19,6 +19,8 @@
 #include "programmer_sdk.h"
 #include "session_file_logger.h"
 #include "validated_image_source.h"
+#include "application_worker.h"
+#include "programming_job.h"
 
 class CVerticallyCenteredEdit : public CEdit {
 public:
@@ -38,6 +40,7 @@ public:
 };
 
 class CMainFrame : public CFrameWnd {
+    friend class CMainFrameContractTest;
     native_tool_ui::BuildIdentityLabel build_identity_;
 public:
     CMainFrame();
@@ -82,11 +85,13 @@ protected:
     afx_msg LRESULT OnWorkerProgress(WPARAM, LPARAM parameter);
     afx_msg LRESULT OnWorkerDone(WPARAM, LPARAM parameter);
     afx_msg void OnClose();
+    afx_msg void OnTimer(UINT_PTR timer);
     DECLARE_MESSAGE_MAP()
 
 private:
     enum class WorkKind {
         Scan,
+        Shutdown,
         Connect,
         ResetMcu,
         LoadImage,
@@ -189,7 +194,6 @@ private:
     std::wstring ControlText(const CWnd& control) const;
     void StartWorker(WorkKind kind,
                      std::function<std::unique_ptr<WorkerResult>()> work);
-    void JoinCompletedWorker();
     void PostProgress(WorkKind kind,
                       std::uint16_t basis_points,
                       const std::wstring& message,
@@ -210,7 +214,8 @@ private:
                                  WorkflowState state);
     void SetOfflineWorkflowFailure(WorkKind kind);
     void ResetOfflineWorkflowAfter(OfflineWorkflowStep step);
-    std::unique_ptr<WorkerResult> RunProgram(WorkKind kind, std::uint8_t source_kind);
+    std::unique_ptr<WorkerResult> RunProgram(WorkKind kind,
+        const rl78_programmer::app::ProgrammingRequest& request);
     rl78_programmer::TargetProfile SelectedTargetProfile() const;
     rl78_programmer::sdk::BridgeFirmwareTarget SelectedBridgeFirmwareTarget() const;
     ProgrammerBoardProfile SelectedBoardProfile() const;
@@ -302,11 +307,10 @@ private:
     std::array<std::uint8_t, 16> downloaded_package_uuid_{};
     std::array<std::uint8_t, 16> active_package_uuid_{};
     rl78_programmer::sdk::OperatingModeInfo operating_mode_{};
-    std::array<std::uint8_t, 16> active_job_uuid_{};
     rl78_programmer::app::SessionFileLogger session_file_logger_;
     bool connected_offline_button_ = false;
-    std::thread worker_;
-    std::atomic<bool> worker_running_{false};
     std::atomic<bool> cancel_requested_{false};
     std::atomic<bool> closing_{false};
+    bool shutdown_complete_ = false;
+    rl78_programmer::app::ApplicationWorker<WorkerResult, WorkerProgress> worker_;
 };

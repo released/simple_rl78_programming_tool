@@ -297,6 +297,17 @@ sequenceDiagram
 
 If the link is lost after a side-effecting request, SDK marks outcome ambiguous, reconnects to the same programmer UUID, negotiates, then queries transfer/job/update status. It never repeats `PROGRAM_START` as a new UUID. Caller-configured reconciliation deadline bounds automatic work; exceeding it returns `OUTCOME_UNKNOWN` with IDs needed for later query.
 
+The current native C++ facade exposes `CreateJobUuid` and `StartProgramWithId`
+for caller-owned job identity. START is transmitted once; an uncertain response
+returns `OUTCOME_UNKNOWN` so the coordinator can query the original UUID.
+`QueryJob` rejects a different returned UUID. The existing `StartProgram` wrapper
+is retained for source compatibility; callers requiring reconciliation should
+allocate and retain the UUID before calling `StartProgramWithId`.
+The native application performs bounded same-session query reconciliation;
+automatic identity-verified reconnect remains outside this implementation.
+An already-open `ProgrammerTransport` can be injected into `ProgrammerClient`
+for transport conformance checks without OS discovery or real-device access.
+
 `FW_ENTER_BOOTLOADER` is a special personality transition. Once the application
 ACK is received, the SDK intentionally closes without a PLP close command and
 the caller scans for `0416:3F00`. If the ACK is lost, the CRC may already be

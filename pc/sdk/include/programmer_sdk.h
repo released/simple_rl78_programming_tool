@@ -13,6 +13,8 @@
 
 namespace rl78_programmer::sdk {
 
+namespace detail { class ProgrammerTransport; }
+
 enum class TransportKind : std::uint8_t {
     UsbHid = 0,
     Uart = 1
@@ -140,6 +142,8 @@ using ProgressCallback = std::function<void(std::uint16_t basis_points,
 class ProgrammerClient {
 public:
     ProgrammerClient();
+    explicit ProgrammerClient(std::unique_ptr<detail::ProgrammerTransport> opened_transport,
+                              int timeout_ms = 1000);
     ~ProgrammerClient();
 
     ProgrammerClient(const ProgrammerClient&) = delete;
@@ -150,6 +154,7 @@ public:
                                                     bool filter_ids = true);
     static std::vector<DeviceDescriptor> EnumerateSerial();
     static std::array<std::uint8_t, 16> G15ProfileUuid();
+    static std::array<std::uint8_t, 16> CreateJobUuid();
 
     void Connect(const DeviceDescriptor& descriptor, int timeout_ms = 1000);
     void Disconnect() noexcept;
@@ -175,6 +180,11 @@ public:
     void ActivatePackage(const std::array<std::uint8_t, 16>& package_uuid,
                          std::uint32_t expected_generation = 0);
     std::array<std::uint8_t, 16> StartProgram(
+        std::uint8_t source_kind,
+        const std::array<std::uint8_t, 16>& source_uuid,
+        const std::array<std::uint8_t, 16>& profile_uuid,
+        std::uint16_t program_flags = 0);
+    void StartProgramWithId(const std::array<std::uint8_t, 16>& job_uuid,
         std::uint8_t source_kind,
         const std::array<std::uint8_t, 16>& source_uuid,
         const std::array<std::uint8_t, 16>& profile_uuid,
